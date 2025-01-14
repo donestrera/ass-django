@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Arduino Serial Data</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+
+    <style>
+      #sample {
+        background-color: red;
+        width: 300px;
+        height: 300px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Communicating from an Arduino to Python/Flask</h1>
+
+    <div id="sample"></div>
+
+    <script>
+      // Initialize Socket.IO with the correct configuration for Flask-SocketIO
+      var socket = io({
+        transports: ["websocket"],
+      });
+
+      socket.on("connect", function () {
+        console.log("Connected to server");
+      });
+
+      socket.on("data", function (data) {
+        console.log(data);
+        // Convert data to number and ensure it's between 0 and 100
+        let opacity = parseFloat(data);
+        opacity = Math.min(Math.max(opacity, 0), 100);
+        document.getElementById("sample").style.opacity = opacity + "%";
+      });
+    </script>
+  </body>
+</html>
