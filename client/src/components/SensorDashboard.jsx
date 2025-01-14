@@ -24,7 +24,7 @@ import {
   Toolbar,
   Button,
   useMediaQuery,
-  Drawer,
+  Collapse,
   Divider,
 } from '@mui/material';
 import ThermostatIcon from '@mui/icons-material/Thermostat';
@@ -48,109 +48,59 @@ const SensorCard = ({ title, value, isAlert, unit, icon, error, secondaryText, c
   const theme = useTheme();
   
   return (
-    <Fade in timeout={500}>
-      <Card 
-        sx={{ 
-          height: '100%',
-          background: isAlert 
-            ? alpha(theme.palette.error.light, 0.1)
-            : theme.palette.background.paper,
-          color: theme.palette.text.primary,
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          '&:hover': {
-            transform: 'translateY(-4px)',
-            boxShadow: theme.shadows[4],
-          },
-          position: 'relative',
-          overflow: 'hidden',
-          border: `1px solid ${theme.palette.divider}`,
-        }}
-      >
-        <CardContent>
-          <Box display="flex" alignItems="center" gap={1.5} mb={2}>
-            <Box
-              sx={{
-                backgroundColor: isAlert 
-                  ? alpha(theme.palette.error.main, 0.1)
-                  : alpha(theme.palette.primary.main, 0.1),
-                borderRadius: '12px',
-                p: 1,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              {React.cloneElement(icon, { 
-                sx: { 
-                  color: isAlert ? theme.palette.error.main : theme.palette.primary.main,
-                  fontSize: { xs: '1.5rem', sm: '2rem' }
-                } 
-              })}
-            </Box>
-            <Typography 
-              variant="h6" 
-              component="div" 
-              fontWeight="medium"
-              sx={{ 
-                fontSize: { xs: '1rem', sm: '1.25rem' }
-              }}
-            >
+    <Card 
+      sx={{ 
+        height: '100%',
+        minHeight: 120,
+        position: 'relative',
+        p: 1,
+        ...(isAlert && {
+          backgroundColor: alpha(theme.palette.error.main, 0.1),
+          borderColor: theme.palette.error.main,
+          borderWidth: 1,
+          borderStyle: 'solid'
+        })
+      }}
+    >
+      <CardContent sx={{ p: 1 }}>
+        <Grid container spacing={1} alignItems="center">
+          <Grid item>
+            {React.cloneElement(icon, { 
+              sx: { 
+                fontSize: '1.5rem',
+                color: isAlert ? theme.palette.error.main : theme.palette.primary.main 
+              } 
+            })}
+          </Grid>
+          <Grid item>
+            <Typography variant="subtitle1" component="div">
               {title}
             </Typography>
-          </Box>
-          {error ? (
-            <Alert 
-              severity="error" 
-              sx={{ 
-                mb: 2,
-                backgroundColor: 'transparent',
-                color: theme.palette.error.main,
-                border: `1px solid ${theme.palette.error.main}`,
-              }}
-            >
-              Sensor Error
-            </Alert>
-          ) : (
-            <Typography 
-              variant="h4" 
-              sx={{ 
-                fontWeight: 'bold',
-                color: isAlert ? theme.palette.error.main : theme.palette.text.primary,
-                fontSize: { xs: '1.5rem', sm: '2rem' }
-              }}
-            >
-              {value} {unit && (
-                <Typography 
-                  component="span" 
-                  variant="h6" 
-                  color="text.secondary"
-                  sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}
-                >
-                  {unit}
-                </Typography>
-              )}
-            </Typography>
-          )}
+          </Grid>
+        </Grid>
+        
+        <Box sx={{ mt: 1 }}>
+          <Typography variant="h6" component="div">
+            {value} {unit}
+          </Typography>
           {secondaryText && (
-            <Typography 
-              variant="body2" 
-              color="text.secondary" 
-              sx={{ 
-                mt: 1,
-                fontSize: { xs: '0.875rem', sm: '1rem' }
-              }}
-            >
+            <Typography variant="body2" color="text.secondary">
               {secondaryText}
             </Typography>
           )}
-          {control && (
-            <Box sx={{ mt: 2, borderTop: `1px solid ${theme.palette.divider}`, pt: 2 }}>
-              {control}
-            </Box>
+          {error && (
+            <Typography variant="caption" color="error">
+              {error}
+            </Typography>
           )}
-        </CardContent>
-      </Card>
-    </Fade>
+        </Box>
+        {control && (
+          <Box sx={{ mt: 1 }}>
+            {control}
+          </Box>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 
@@ -159,7 +109,7 @@ const SensorDashboard = () => {
   const { logout } = useAuth();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [sensorData, setSensorData] = useState({
     temperature: null,
     humidity: null,
@@ -379,75 +329,73 @@ const SensorDashboard = () => {
   return (
     <Box sx={{ flexGrow: 1, minHeight: '100vh', bgcolor: 'background.default' }}>
       <AppBar position="static" color="transparent" elevation={1}>
-        <Toolbar>
+        <Toolbar sx={{ flexDirection: 'column', alignItems: 'stretch', py: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', mb: isMobile && menuOpen ? 1 : 0 }}>
+            <Typography 
+              variant="h5" 
+              component="div" 
+              sx={{ 
+                flexGrow: 1, 
+                color: 'primary.main', 
+                fontWeight: 600,
+                fontSize: { xs: '1.25rem', sm: '1.5rem' }
+              }}
+            >
+              Sensor Dashboard
+            </Typography>
+            {!isMobile && (
+              <Button
+                color="primary"
+                onClick={handleLogout}
+                startIcon={<LogoutIcon />}
+              >
+                Logout
+              </Button>
+            )}
+          </Box>
+          
           {isMobile && (
-            <IconButton
-              edge="start"
-              color="inherit"
-              onClick={() => setDrawerOpen(true)}
-              sx={{ mr: 2 }}
-            >
-              <MenuIcon />
-            </IconButton>
-          )}
-          <Typography 
-            variant="h5" 
-            component="div" 
-            sx={{ 
-              flexGrow: 1, 
-              color: 'primary.main', 
-              fontWeight: 600,
-              fontSize: { xs: '1.25rem', sm: '1.5rem' }
-            }}
-          >
-            Sensor Dashboard
-          </Typography>
-          {!isMobile && (
-            <Button
-              color="primary"
-              onClick={handleLogout}
-              startIcon={<LogoutIcon />}
-            >
-              Logout
-            </Button>
+            <>
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%', mb: 1 }}>
+                <IconButton
+                  color="inherit"
+                  onClick={() => setMenuOpen(!menuOpen)}
+                  size="small"
+                >
+                  <MenuIcon />
+                </IconButton>
+              </Box>
+              <Collapse in={menuOpen} sx={{ width: '100%' }}>
+                <List sx={{ 
+                  bgcolor: alpha(theme.palette.background.paper, 0.98),
+                  borderRadius: 1,
+                  border: `1px solid ${theme.palette.divider}`,
+                }}>
+                  <ListItem button onClick={handleLogout}>
+                    <ListItemIcon>
+                      <LogoutIcon />
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary="Logout"
+                      primaryTypographyProps={{
+                        sx: { fontSize: { xs: '0.875rem', sm: '1rem' } }
+                      }}
+                    />
+                  </ListItem>
+                </List>
+              </Collapse>
+            </>
           )}
         </Toolbar>
       </AppBar>
 
-      {isMobile && (
-        <Drawer
-          anchor="left"
-          open={drawerOpen}
-          onClose={() => setDrawerOpen(false)}
-        >
-          <Box sx={{ width: 250, p: 2 }}>
-            <Typography variant="h6" sx={{ mb: 2 }}>Menu</Typography>
-            <Divider sx={{ mb: 2 }} />
-            <Button
-              fullWidth
-              color="primary"
-              onClick={handleLogout}
-              startIcon={<LogoutIcon />}
-              sx={{ mb: 2 }}
-            >
-              Logout
-            </Button>
-          </Box>
-        </Drawer>
-      )}
-
-      <Container 
-        maxWidth="xl" 
-        sx={{ 
-          py: { xs: 2, sm: 4 },
-          px: { xs: 1, sm: 3 }
-        }}
-      >
+      <Container maxWidth="lg" sx={{ mt: 2, mb: 2 }}>
         {error && (
           <Alert 
             severity="error" 
             sx={{ 
-              mb: { xs: 2, sm: 4 },
+              mb: { xs: 3, sm: 4 },
+              borderRadius: 2,
               fontSize: { xs: '0.875rem', sm: '1rem' }
             }}
           >
@@ -455,7 +403,7 @@ const SensorDashboard = () => {
           </Alert>
         )}
 
-        <Grid container spacing={{ xs: 2, sm: 3 }}>
+        <Grid container spacing={2}>
           <Grid item xs={12} sm={6} md={3}>
             <SensorCard
               title="Temperature"

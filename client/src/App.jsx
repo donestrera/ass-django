@@ -1,9 +1,13 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ThemeProvider, createTheme } from '@mui/material';
+import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import Login from './components/Login';
 import Register from './components/Register';
-import SensorDashboard from './components/SensorDashboard';
+import Navigation from './components/Navigation';
+import TemperatureHumidityView from './components/TemperatureHumidityView';
+import MotionSensorView from './components/MotionSensorView';
+import SmokeSensorView from './components/SmokeSensorView';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { SensorProvider } from './context/SensorContext';
 
 const theme = createTheme({
   palette: {
@@ -55,14 +59,24 @@ const theme = createTheme({
   },
 });
 
+const DashboardLayout = ({ children }) => {
+  return (
+    <SensorProvider>
+      <Navigation />
+      {children}
+    </SensorProvider>
+  );
+};
+
 const PrivateRoute = ({ children }) => {
   const { isAuthenticated } = useAuth();
-  return isAuthenticated ? children : <Navigate to="/login" />;
+  return isAuthenticated ? <DashboardLayout>{children}</DashboardLayout> : <Navigate to="/login" />;
 };
 
 function App() {
   return (
     <ThemeProvider theme={theme}>
+      <CssBaseline />
       <AuthProvider>
         <Router>
           <Routes>
@@ -70,13 +84,33 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route
               path="/dashboard"
+              element={<Navigate to="/dashboard/temperature" replace />}
+            />
+            <Route
+              path="/dashboard/temperature"
               element={
                 <PrivateRoute>
-                  <SensorDashboard />
+                  <TemperatureHumidityView />
                 </PrivateRoute>
               }
             />
-            <Route path="/" element={<Navigate to="/dashboard" />} />
+            <Route
+              path="/dashboard/motion"
+              element={
+                <PrivateRoute>
+                  <MotionSensorView />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/dashboard/smoke"
+              element={
+                <PrivateRoute>
+                  <SmokeSensorView />
+                </PrivateRoute>
+              }
+            />
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </Router>
       </AuthProvider>

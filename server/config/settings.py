@@ -133,14 +133,17 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CORS settings
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://localhost:3000",
-    "http://192.168.1.22:5173",
-    "http://192.168.1.22:3000",
-    "http://192.168.1.22:80",
-    "http://192.168.1.22",
-]
+CORS_ORIGIN_ALLOW_ALL = True  # This should be enough for development
+
+# Comment out CORS_ALLOWED_ORIGINS since we're allowing all origins
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:5173",
+#     "http://localhost:3000",
+#     "http://192.168.1.22:5173",
+#     "http://192.168.1.22:3000",
+#     "http://192.168.1.22:80",
+#     "http://192.168.1.22"
+# ]
 
 CORS_ALLOW_CREDENTIALS = True
 
@@ -165,9 +168,6 @@ CORS_ALLOW_HEADERS = [
     'x-requested-with',
 ]
 
-# Add CORS_ORIGIN_ALLOW_ALL for development
-CORS_ORIGIN_ALLOW_ALL = True  # Be careful with this in production
-
 # Add CSRF settings
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
@@ -175,7 +175,7 @@ CSRF_TRUSTED_ORIGINS = [
     "http://192.168.1.22:5173",
     "http://192.168.1.22:3000",
     "http://192.168.1.22:80",
-    "http://192.168.1.22",
+    "http://192.168.1.22"
 ]
 
 # REST Framework settings

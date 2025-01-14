@@ -20,6 +20,8 @@ import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
+const API_URL = `${import.meta.env.VITE_API_URL}/api`;
+
 const Register = () => {
   const [formData, setFormData] = useState({
     username: '',
@@ -58,7 +60,7 @@ const Register = () => {
 
     try {
       const { confirmPassword, ...registerData } = formData;
-      await axios.post('http://localhost:8000/api/auth/register/', registerData);
+      await axios.post(`${API_URL}/auth/register/`, registerData);
       navigate('/login');
     } catch (err) {
       setError(err.response?.data?.error || 'Registration failed. Please try again.');
