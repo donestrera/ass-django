@@ -6,13 +6,20 @@ import serial
 import json
 import threading
 import time
+import logging
 from serial.tools import list_ports
 from .models import MotionHistory
 from rest_framework import status
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 class SensorData:
     _instance = None
     _lock = threading.Lock()
+    MAX_RETRY_INTERVAL = 60  # Maximum retry interval in seconds
+    INITIAL_RETRY_INTERVAL = 1  # Initial retry interval in seconds
 
     def __new__(cls):
         if cls._instance is None:
@@ -26,92 +33,124 @@ class SensorData:
                         'smokeDetected': False,
                         'lastUpdate': None,
                         'connected': False,
-                        'pirEnabled': True  # Add PIR state tracking
+                        'pirEnabled': True
                     }
                     cls._instance._last_motion_state = False
                     cls._instance.serial_connection = None
+                    cls._instance._should_run = True  # Flag for graceful shutdown
                     cls._instance.start_serial_thread()
         return cls._instance
 
+    def cleanup(self):
+        """Cleanup method for graceful shutdown"""
+        self._should_run = False
+        if self.serial_connection and self.serial_connection.is_open:
+            try:
+                self.serial_connection.close()
+            except Exception as e:
+                logger.error(f"Error closing serial connection: {e}")
+
     def find_arduino_port(self):
         """Find the Arduino port automatically"""
-        ports = list_ports.comports()
-        for port in ports:
-            if 'usbserial' in port.device.lower() or 'usbmodem' in port.device.lower():
-                return port.device
+        try:
+            ports = list_ports.comports()
+            for port in ports:
+                if 'usbserial' in port.device.lower() or 'usbmodem' in port.device.lower():
+                    return port.device
+        except Exception as e:
+            logger.error(f"Error finding Arduino port: {e}")
         return None
 
     def handle_motion_event(self, motion_detected):
         """Handle motion detection state changes"""
-        if motion_detected and not self._last_motion_state:
-            # Only create new entry if enough time has passed
-            if MotionHistory.can_create_new_entry():
-                MotionHistory.objects.create(
-                    temperature=self.data['temperature'],
-                    humidity=self.data['humidity']
-                )
-        elif not motion_detected and self._last_motion_state:
-            # Motion just ended - update last active motion entry
-            latest_motion = MotionHistory.objects.filter(is_active=True).first()
-            if latest_motion:
-                latest_motion.is_active = False
-                latest_motion.save()
-        
-        self._last_motion_state = motion_detected
+        try:
+            if motion_detected and not self._last_motion_state:
+                if MotionHistory.can_create_new_entry():
+                    MotionHistory.objects.create(
+                        temperature=self.data['temperature'],
+                        humidity=self.data['humidity']
+                    )
+            elif not motion_detected and self._last_motion_state:
+                latest_motion = MotionHistory.objects.filter(is_active=True).first()
+                if latest_motion:
+                    latest_motion.is_active = False
+                    latest_motion.save()
+            
+            self._last_motion_state = motion_detected
+        except Exception as e:
+            logger.error(f"Error handling motion event: {e}")
 
-    def send_command(self, command):
-        """Send a command to the Arduino"""
-        if self.serial_connection and self.serial_connection.is_open:
-            try:
-                self.serial_connection.write(f"{command}\n".encode())
-                time.sleep(0.1)  # Give Arduino time to process
-                return True
-            except Exception as e:
-                print(f"Error sending command: {e}")
-                return False
-        return False
+    def send_command(self, command, timeout=1.0):
+        """Send a command to the Arduino with timeout"""
+        if not self.serial_connection or not self.serial_connection.is_open:
+            return False
 
-    def set_pir_state(self, enabled):
-        """Control PIR sensor state"""
-        command = "PIR_ON" if enabled else "PIR_OFF"
-        if self.send_command(command):
-            self.data['pirEnabled'] = enabled
+        try:
+            self.serial_connection.write(f"{command}\n".encode())
+            time.sleep(min(timeout, 0.1))  # Give Arduino time to process, but respect timeout
             return True
-        return False
+        except Exception as e:
+            logger.error(f"Error sending command: {e}")
+            return False
 
     def read_serial_data(self):
         """Background thread function to continuously read serial data from Arduino"""
-        serial_port = self.find_arduino_port() or '/dev/cu.usbmodem1101'  # Common port for Arduino on Mac
-        baud_rate = 9600
+        retry_interval = self.INITIAL_RETRY_INTERVAL
+        last_smoke_state = False
 
-        while True:
+        while self._should_run:
             try:
-                self.serial_connection = serial.Serial(serial_port, baud_rate, timeout=1)
-                self.data['connected'] = True
-                print(f"Connected to Arduino on {serial_port}")
-                
-                while True:
+                if not self.serial_connection or not self.serial_connection.is_open:
+                    serial_port = self.find_arduino_port() or '/dev/cu.usbmodem1101'
+                    self.serial_connection = serial.Serial(serial_port, 9600, timeout=1)
+                    logger.info(f"Connected to Arduino on {serial_port}")
+                    self.data['connected'] = True
+                    retry_interval = self.INITIAL_RETRY_INTERVAL  # Reset retry interval on successful connection
+
+                while self._should_run and self.serial_connection.is_open:
                     if self.serial_connection.in_waiting:
                         line = self.serial_connection.readline().decode('utf-8').strip()
-                        try:
-                            new_data = json.loads(line)
-                            # Handle motion detection before updating data
-                            if 'motionDetected' in new_data:
-                                self.handle_motion_event(new_data['motionDetected'])
-                            self.data.update(new_data)
-                            self.data['lastUpdate'] = time.strftime('%Y-%m-%d %H:%M:%S')
-                            self.data['connected'] = True
-                        except json.JSONDecodeError as e:
-                            print(f"Error parsing JSON data: {line}")
-                            print(f"Error details: {str(e)}")
-                    time.sleep(0.1)
+                        if line:  # Only process non-empty lines
+                            try:
+                                new_data = json.loads(line)
+                                
+                                # Handle motion detection
+                                if 'motionDetected' in new_data:
+                                    self.handle_motion_event(new_data['motionDetected'])
+                                
+                                # Handle smoke detection changes
+                                if 'smokeDetected' in new_data:
+                                    smoke_detected = bool(new_data['smokeDetected'])
+                                    if smoke_detected != last_smoke_state:
+                                        logger.info(f"Smoke state changed: {smoke_detected}")
+                                        last_smoke_state = smoke_detected
+                                
+                                self.data.update(new_data)
+                                self.data['lastUpdate'] = time.strftime('%Y-%m-%d %H:%M:%S')
+                                self.data['connected'] = True
+                                
+                            except json.JSONDecodeError as e:
+                                logger.warning(f"Invalid JSON data received: {line}, Error: {e}")
+                    time.sleep(0.1)  # Prevent CPU overload
                     
             except serial.SerialException as e:
-                print(f"Serial port error: {e}")
+                logger.error(f"Serial port error: {e}")
                 self.data['connected'] = False
+                if self.serial_connection:
+                    try:
+                        self.serial_connection.close()
+                    except:
+                        pass
                 self.serial_connection = None
-                self.data['lastUpdate'] = time.strftime('%Y-%m-%d %H:%M:%S')
-                time.sleep(5)  # Wait before retrying
+                
+                # Reset smoke state on disconnection
+                last_smoke_state = False
+                self.data['smokeDetected'] = False
+                
+                # Implement exponential backoff
+                retry_interval = min(retry_interval * 2, self.MAX_RETRY_INTERVAL)
+                logger.info(f"Retrying connection in {retry_interval} seconds")
+                time.sleep(retry_interval)
 
     def start_serial_thread(self):
         """Start the serial reading thread"""

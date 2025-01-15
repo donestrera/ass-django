@@ -1,6 +1,12 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { debounce } from 'lodash';
 
 const API_URL = `${import.meta.env.VITE_API_URL}/api`;
+const POLLING_INTERVAL = 2000; // 2 seconds default polling
+const SMOKE_POLLING_INTERVAL = 500; // 500ms polling when smoke is detected
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 1000; // 1 second
+const MAX_HISTORY_POINTS = 50; // Maximum number of points to keep in history
 
 const useSensorData = () => {
   const [sensorData, setSensorData] = useState({
@@ -13,12 +19,70 @@ const useSensorData = () => {
     pirEnabled: true
   });
   const [motionHistory, setMotionHistory] = useState([]);
-  const [historicalData, setHistoricalData] = useState([]);
+  const [historicalData, setHistoricalData] = useState({
+    temperature: [],
+    humidity: [],
+    timestamps: []
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [retryCount, setRetryCount] = useState(0);
+  
+  // Use refs for values that shouldn't trigger re-renders
+  const intervalRef = useRef(null);
+  const abortControllerRef = useRef(null);
+  const lastDataRef = useRef(null);
+
+  // Debounced state updates to prevent too frequent re-renders
+  const debouncedSetSensorData = useCallback(
+    debounce((newData) => {
+      setSensorData(prev => {
+        // Only update if data has actually changed
+        if (JSON.stringify(prev) === JSON.stringify(newData)) {
+          return prev;
+        }
+        return newData;
+      });
+    }, 100),
+    []
+  );
+
+  // Update historical data
+  const updateHistoricalData = useCallback((newData) => {
+    if (typeof newData.temperature === 'number' && typeof newData.humidity === 'number') {
+      const timestamp = new Date().toISOString();
+      
+      setHistoricalData(prev => {
+        // Create new arrays with the latest data point
+        const newTemp = [...prev.temperature, newData.temperature];
+        const newHum = [...prev.humidity, newData.humidity];
+        const newTimestamps = [...prev.timestamps, timestamp];
+        
+        // Keep only the last MAX_HISTORY_POINTS
+        if (newTemp.length > MAX_HISTORY_POINTS) {
+          return {
+            temperature: newTemp.slice(-MAX_HISTORY_POINTS),
+            humidity: newHum.slice(-MAX_HISTORY_POINTS),
+            timestamps: newTimestamps.slice(-MAX_HISTORY_POINTS)
+          };
+        }
+        
+        return {
+          temperature: newTemp,
+          humidity: newHum,
+          timestamps: newTimestamps
+        };
+      });
+    }
+  }, []);
 
   const fetchData = useCallback(async () => {
+    // Cancel any in-flight requests
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    abortControllerRef.current = new AbortController();
+
     try {
       setError(null);
       const token = localStorage.getItem('accessToken');
@@ -31,6 +95,7 @@ const useSensorData = () => {
           'Authorization': `Bearer ${token}`,
           'Accept': 'application/json',
         },
+        signal: abortControllerRef.current.signal
       });
 
       if (!response.ok) {
@@ -44,109 +109,138 @@ const useSensorData = () => {
       
       // Transform and validate the data
       const transformedData = {
-        temperature: typeof data.temperature === 'number' ? data.temperature : null,
-        humidity: typeof data.humidity === 'number' ? data.humidity : null,
+        temperature: typeof data.temperature === 'number' ? Number(data.temperature.toFixed(1)) : null,
+        humidity: typeof data.humidity === 'number' ? Number(data.humidity.toFixed(1)) : null,
         motionDetected: Boolean(data.motionDetected),
         smokeDetected: Boolean(data.smokeDetected),
-        lastUpdate: new Date().toISOString(),
-        connected: true,
+        lastUpdate: data.lastUpdate || null,
+        connected: Boolean(data.connected),
         pirEnabled: Boolean(data.pirEnabled)
       };
 
-      setSensorData(transformedData);
+      // Cache the last successful data
+      lastDataRef.current = transformedData;
+      
+      // Update historical data
+      updateHistoricalData(transformedData);
+      
+      // Use debounced update to prevent too frequent re-renders
+      debouncedSetSensorData(transformedData);
+      setLoading(false);
+      setRetryCount(0);
 
-      // Update motion history if motion is detected
-      if (transformedData.motionDetected) {
-        const newMotionEvent = {
-          timestamp: new Date().toLocaleString(),
-          temperature: transformedData.temperature?.toFixed(1),
-          humidity: transformedData.humidity?.toFixed(1)
-        };
-        setMotionHistory(prev => [newMotionEvent, ...prev].slice(0, 50));
-      }
-
-      // Update historical data for charts
-      setHistoricalData(prev => {
-        const newDataPoint = {
+      // If motion is detected, add to history
+      if (transformedData.motionDetected && !sensorData.motionDetected) {
+        const historyEntry = {
           timestamp: new Date().toLocaleString(),
           temperature: transformedData.temperature,
           humidity: transformedData.humidity
         };
-        return [...prev, newDataPoint].slice(-50); // Keep last 50 data points
-      });
+        setMotionHistory(prev => [historyEntry, ...prev]);
+      }
 
-      setLoading(false);
-      setRetryCount(0);
-    } catch (error) {
-      console.error('Error fetching sensor data:', error);
-      setError(error.message);
-      setLoading(false);
+      // Adjust polling interval based on smoke detection
+      const newInterval = transformedData.smokeDetected ? SMOKE_POLLING_INTERVAL : POLLING_INTERVAL;
+      if (intervalRef.current && newInterval !== intervalRef.current.interval) {
+        clearInterval(intervalRef.current.id);
+        startPolling(newInterval);
+      }
 
-      // Implement exponential backoff for retries
-      if (retryCount < 3) {
-        const backoffTime = Math.pow(2, retryCount) * 1000;
-        setTimeout(() => {
-          setRetryCount(prev => prev + 1);
-          fetchData();
-        }, backoffTime);
+    } catch (err) {
+      if (err.name === 'AbortError') {
+        return; // Ignore aborted requests
+      }
+      
+      setError(err.message);
+      setLoading(false);
+      
+      // Implement retry logic
+      if (retryCount < MAX_RETRIES) {
+        setRetryCount(prev => prev + 1);
+        setTimeout(fetchData, RETRY_DELAY * (retryCount + 1));
+      } else if (lastDataRef.current) {
+        // If we have cached data, keep showing it even if we can't fetch new data
+        debouncedSetSensorData(lastDataRef.current);
       }
     }
-  }, [retryCount]);
+  }, [debouncedSetSensorData, retryCount, sensorData.motionDetected, updateHistoricalData]);
 
   const togglePirSensor = useCallback(async () => {
     try {
       const token = localStorage.getItem('accessToken');
-      if (!token) {
-        throw new Error('No authentication token found');
-      }
+      if (!token) throw new Error('No authentication token found');
 
-      const response = await fetch(`${API_URL}/sensor-data/toggle-pir/`, {
+      const response = await fetch(`${API_URL}/control-pir/`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({ enabled: !sensorData.pirEnabled }),
       });
 
-      if (!response.ok) {
-        throw new Error(`Failed to toggle PIR sensor: ${response.status}`);
-      }
-
+      if (!response.ok) throw new Error('Failed to toggle PIR sensor');
+      
       const data = await response.json();
-      setSensorData(prev => ({
-        ...prev,
-        pirEnabled: data.pirEnabled
-      }));
+      setSensorData(prev => ({ ...prev, pirEnabled: data.pirEnabled }));
     } catch (error) {
       console.error('Error toggling PIR sensor:', error);
-      setError(error.message);
+      setError('Failed to toggle PIR sensor');
+    }
+  }, [sensorData.pirEnabled]);
+
+  const clearMotionHistory = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) throw new Error('No authentication token found');
+
+      const response = await fetch(`${API_URL}/clear-motion-history/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) throw new Error('Failed to clear motion history');
+      
+      setMotionHistory([]);
+    } catch (error) {
+      console.error('Error clearing motion history:', error);
+      setError('Failed to clear motion history');
     }
   }, []);
 
-  const clearMotionHistory = useCallback(() => {
-    setMotionHistory([]);
-  }, []);
-
-  // Set up polling interval for real-time updates
-  useEffect(() => {
-    fetchData(); // Initial fetch
-
-    const intervalId = setInterval(fetchData, 5000); // Poll every 5 seconds
-
-    return () => {
-      clearInterval(intervalId);
-    };
+  const startPolling = useCallback((interval) => {
+    const id = setInterval(fetchData, interval);
+    intervalRef.current = { id, interval };
   }, [fetchData]);
 
-  return {
-    sensorData,
+  useEffect(() => {
+    fetchData();
+    startPolling(POLLING_INTERVAL);
+
+    return () => {
+      // Cleanup
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current.id);
+      }
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      debouncedSetSensorData.cancel();
+    };
+  }, [fetchData, startPolling, debouncedSetSensorData]);
+
+  return { 
+    sensorData, 
+    loading, 
+    error, 
+    refetch: fetchData,
+    isRetrying: retryCount > 0,
     motionHistory,
     historicalData,
-    loading,
-    error,
     togglePirSensor,
-    clearMotionHistory,
-    refetch: fetchData
+    clearMotionHistory
   };
 };
 

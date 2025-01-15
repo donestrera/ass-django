@@ -46,14 +46,15 @@ const formatHumidity = (value) => value !== null ? value.toFixed(1) : 'N/A';
 
 const SensorCard = ({ title, value, isAlert, unit, icon, error, secondaryText, control }) => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
   return (
     <Card 
       sx={{ 
         height: '100%',
-        minHeight: 120,
+        minHeight: { xs: 100, sm: 140, md: 160 },
         position: 'relative',
-        p: 1,
+        p: { xs: 0.5, sm: 1.5, md: 2 },
         ...(isAlert && {
           backgroundColor: alpha(theme.palette.error.main, 0.1),
           borderColor: theme.palette.error.main,
@@ -62,40 +63,59 @@ const SensorCard = ({ title, value, isAlert, unit, icon, error, secondaryText, c
         })
       }}
     >
-      <CardContent sx={{ p: 1 }}>
+      <CardContent sx={{ p: { xs: 0.5, sm: 1.5, md: 2 } }}>
         <Grid container spacing={1} alignItems="center">
           <Grid item>
             {React.cloneElement(icon, { 
               sx: { 
-                fontSize: '1.5rem',
+                fontSize: { xs: '1.2rem', sm: '1.8rem', md: '2.2rem' },
                 color: isAlert ? theme.palette.error.main : theme.palette.primary.main 
               } 
             })}
           </Grid>
           <Grid item>
-            <Typography variant="subtitle1" component="div">
+            <Typography 
+              variant={isMobile ? "body1" : "h6"} 
+              component="div"
+              sx={{ fontSize: { xs: '0.9rem', sm: '1.1rem', md: '1.3rem' } }}
+            >
               {title}
             </Typography>
           </Grid>
         </Grid>
         
-        <Box sx={{ mt: 1 }}>
-          <Typography variant="h6" component="div">
+        <Box sx={{ mt: { xs: 0.5, sm: 2, md: 3 } }}>
+          <Typography 
+            variant={isMobile ? "subtitle1" : "h5"} 
+            component="div"
+            sx={{ 
+              fontSize: { xs: '1.1rem', sm: '1.5rem', md: '1.8rem' },
+              fontWeight: 'bold'
+            }}
+          >
             {value} {unit}
           </Typography>
           {secondaryText && (
-            <Typography variant="body2" color="text.secondary">
+            <Typography 
+              variant="body2" 
+              color="text.secondary"
+              sx={{ fontSize: { xs: '0.75rem', sm: '0.9rem', md: '1rem' } }}
+            >
               {secondaryText}
             </Typography>
           )}
           {error && (
-            <Typography variant="caption" color="error">
+            <Typography 
+              variant="caption" 
+              color="error"
+              sx={{ fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.9rem' } }}
+            >
               {error}
             </Typography>
           )}
         </Box>
         {control && (
-          <Box sx={{ mt: 1 }}>
+          <Box sx={{ mt: { xs: 0.5, sm: 2 } }}>
             {control}
           </Box>
         )}
@@ -264,22 +284,25 @@ const SensorDashboard = () => {
   }
 
   const historyContent = (
-    <Card sx={{ mt: { xs: 2, sm: 4 } }}>
-      <CardContent>
-        <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+    <Card sx={{ 
+      mt: { xs: 1, sm: 3, md: 4 },
+      minHeight: { sm: '400px', md: '500px' }
+    }}>
+      <CardContent sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
+        <Box display="flex" alignItems="center" justifyContent="space-between" mb={{ xs: 1, sm: 2, md: 3 }}>
           <Typography 
             variant="h5" 
             component="div"
-            sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}
+            sx={{ fontSize: { xs: '1.1rem', sm: '1.4rem', md: '1.8rem' } }}
           >
             Motion Detection History
           </Typography>
           <Box>
             <IconButton onClick={fetchData} size={isMobile ? "small" : "medium"} sx={{ mr: 1 }}>
-              <RefreshIcon />
+              <RefreshIcon fontSize={isMobile ? "small" : "medium"} />
             </IconButton>
             <IconButton onClick={clearMotionHistory} size={isMobile ? "small" : "medium"} color="error">
-              <DeleteIcon />
+              <DeleteIcon fontSize={isMobile ? "small" : "medium"} />
             </IconButton>
           </Box>
         </Box>
@@ -288,14 +311,21 @@ const SensorDashboard = () => {
             color="text.secondary" 
             align="center" 
             sx={{ 
-              py: 4,
-              fontSize: { xs: '0.875rem', sm: '1rem' }
+              py: { xs: 4, sm: 6, md: 8 },
+              fontSize: { xs: '0.875rem', sm: '1rem', md: '1.2rem' }
             }}
           >
             No motion events recorded yet
           </Typography>
         ) : (
-          <List sx={{ maxHeight: { xs: 300, sm: 400 }, overflow: 'auto' }}>
+          <List sx={{ 
+            maxHeight: { xs: 300, sm: 400, md: 500 }, 
+            overflow: 'auto',
+            '& .MuiListItem-root': {
+              py: { xs: 1, sm: 1.5, md: 2 },
+              px: { xs: 1, sm: 2, md: 3 }
+            }
+          }}>
             {motionHistory.map((event, index) => (
               <ListItem 
                 key={index} 
@@ -327,10 +357,25 @@ const SensorDashboard = () => {
   );
 
   return (
-    <Box sx={{ flexGrow: 1, minHeight: '100vh', bgcolor: 'background.default' }}>
+    <Box sx={{ 
+      flexGrow: 1, 
+      minHeight: '100vh',
+      bgcolor: 'background.default',
+      display: 'flex',
+      flexDirection: 'column'
+    }}>
       <AppBar position="static" color="transparent" elevation={1}>
-        <Toolbar sx={{ flexDirection: 'column', alignItems: 'stretch', py: 1 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', mb: isMobile && menuOpen ? 1 : 0 }}>
+        <Toolbar sx={{ 
+          flexDirection: { xs: 'column', sm: 'row' }, 
+          alignItems: { xs: 'stretch', sm: 'center' }, 
+          py: { xs: 0.5, sm: 1 }
+        }}>
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            width: '100%', 
+            mb: isMobile && menuOpen ? 1 : 0 
+          }}>
             <Typography 
               variant="h5" 
               component="div" 
@@ -338,7 +383,7 @@ const SensorDashboard = () => {
                 flexGrow: 1, 
                 color: 'primary.main', 
                 fontWeight: 600,
-                fontSize: { xs: '1.25rem', sm: '1.5rem' }
+                fontSize: { xs: '1.1rem', sm: '1.25rem', md: '1.5rem' }
               }}
             >
               Sensor Dashboard
@@ -348,6 +393,7 @@ const SensorDashboard = () => {
                 color="primary"
                 onClick={handleLogout}
                 startIcon={<LogoutIcon />}
+                size={isMobile ? "small" : "medium"}
               >
                 Logout
               </Button>
@@ -356,7 +402,7 @@ const SensorDashboard = () => {
           
           {isMobile && (
             <>
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%', mb: 1 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%', mb: 0.5 }}>
                 <IconButton
                   color="inherit"
                   onClick={() => setMenuOpen(!menuOpen)}
@@ -370,15 +416,16 @@ const SensorDashboard = () => {
                   bgcolor: alpha(theme.palette.background.paper, 0.98),
                   borderRadius: 1,
                   border: `1px solid ${theme.palette.divider}`,
+                  py: 0
                 }}>
-                  <ListItem button onClick={handleLogout}>
-                    <ListItemIcon>
-                      <LogoutIcon />
+                  <ListItem button onClick={handleLogout} dense>
+                    <ListItemIcon sx={{ minWidth: 36 }}>
+                      <LogoutIcon fontSize="small" />
                     </ListItemIcon>
                     <ListItemText 
                       primary="Logout"
                       primaryTypographyProps={{
-                        sx: { fontSize: { xs: '0.875rem', sm: '1rem' } }
+                        sx: { fontSize: '0.875rem' }
                       }}
                     />
                   </ListItem>
@@ -389,22 +436,30 @@ const SensorDashboard = () => {
         </Toolbar>
       </AppBar>
 
-      <Container maxWidth="lg" sx={{ mt: 2, mb: 2 }}>
+      <Container 
+        maxWidth="xl"
+        sx={{ 
+          flexGrow: 1,
+          mt: { xs: 1, sm: 3, md: 4 }, 
+          mb: { xs: 1, sm: 3, md: 4 },
+          px: { xs: 1, sm: 3, md: 4 }
+        }}
+      >
         {error && (
           <Alert 
             severity="error" 
             sx={{ 
-              mb: { xs: 3, sm: 4 },
-              borderRadius: 2,
-              fontSize: { xs: '0.875rem', sm: '1rem' }
+              mb: { xs: 1, sm: 3, md: 4 },
+              borderRadius: 1,
+              fontSize: { xs: '0.8rem', sm: '0.875rem', md: '1rem' }
             }}
           >
             {error}
           </Alert>
         )}
 
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={6} md={3}>
+        <Grid container spacing={{ xs: 1, sm: 3, md: 4 }}>
+          <Grid item xs={12} sm={6} lg={3}>
             <SensorCard
               title="Temperature"
               value={sensorData.temperature?.toFixed(1) || 'N/A'}
@@ -413,7 +468,7 @@ const SensorDashboard = () => {
               error={!sensorData.connected}
             />
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={12} sm={6} lg={3}>
             <SensorCard
               title="Humidity"
               value={sensorData.humidity?.toFixed(1) || 'N/A'}
@@ -422,7 +477,7 @@ const SensorDashboard = () => {
               error={!sensorData.connected}
             />
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={12} sm={6} lg={3}>
             <SensorCard
               title="Motion Status"
               value={sensorData.motionDetected ? 'Motion Detected' : 'No Motion'}
@@ -440,7 +495,7 @@ const SensorDashboard = () => {
                     />
                   }
                   label={
-                    <Typography sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                    <Typography sx={{ fontSize: { xs: '0.875rem', sm: '1rem', md: '1.1rem' } }}>
                       Enable Sensor
                     </Typography>
                   }
@@ -448,7 +503,7 @@ const SensorDashboard = () => {
               }
             />
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={12} sm={6} lg={3}>
             <SensorCard
               title="Smoke Status"
               value={sensorData.smokeDetected ? 'Smoke Detected' : 'No Smoke'}

@@ -138,6 +138,34 @@ const TemperatureHumidityView = () => {
   const theme = useTheme();
   const { sensorData, historicalData, loading, error } = useSensor();
 
+  const chartData = {
+    labels: historicalData.timestamps,
+    datasets: [
+      {
+        label: 'Temperature',
+        data: historicalData.temperature,
+        borderColor: theme.palette.error.main,
+        backgroundColor: theme.palette.error.main + '20',
+        yAxisID: 'y',
+        tension: 0.4,
+        pointRadius: 2,
+        pointHoverRadius: 5,
+        fill: true,
+      },
+      {
+        label: 'Humidity',
+        data: historicalData.humidity,
+        borderColor: theme.palette.primary.main,
+        backgroundColor: theme.palette.primary.main + '20',
+        yAxisID: 'y1',
+        tension: 0.4,
+        pointRadius: 2,
+        pointHoverRadius: 5,
+        fill: true,
+      },
+    ],
+  };
+
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -155,6 +183,7 @@ const TemperatureHumidityView = () => {
             size: 12,
             family: theme.typography.fontFamily,
           },
+          color: theme.palette.text.primary,
         },
       },
       tooltip: {
@@ -186,6 +215,7 @@ const TemperatureHumidityView = () => {
             }
             if (context.parsed.y !== null) {
               label += context.parsed.y.toFixed(1);
+              label += label.includes('Temperature') ? '°C' : '%';
             }
             return label;
           }
@@ -196,12 +226,14 @@ const TemperatureHumidityView = () => {
       x: {
         grid: {
           display: false,
+          color: theme.palette.divider,
         },
         ticks: {
           maxTicksLimit: 8,
           font: {
             size: 11,
           },
+          color: theme.palette.text.secondary,
           callback: function(value) {
             return formatTimestamp(this.getLabelForValue(value));
           }
@@ -214,18 +246,20 @@ const TemperatureHumidityView = () => {
         title: {
           display: true,
           text: 'Temperature (°C)',
+          color: theme.palette.error.main,
           font: {
             size: 12,
             weight: 'bold',
           }
         },
-        min: 0,
-        max: 50,
+        min: Math.min(...historicalData.temperature, 0) - 5,
+        max: Math.max(...historicalData.temperature, 40) + 5,
         ticks: {
           stepSize: 5,
           font: {
             size: 11,
-          }
+          },
+          color: theme.palette.text.secondary,
         },
         grid: {
           color: theme.palette.divider,
@@ -238,6 +272,7 @@ const TemperatureHumidityView = () => {
         title: {
           display: true,
           text: 'Humidity (%)',
+          color: theme.palette.primary.main,
           font: {
             size: 12,
             weight: 'bold',
@@ -249,86 +284,15 @@ const TemperatureHumidityView = () => {
           stepSize: 10,
           font: {
             size: 11,
-          }
+          },
+          color: theme.palette.text.secondary,
         },
         grid: {
-          drawOnChartArea: false,
-        },
-      },
-    },
+          display: false,
+        }
+      }
+    }
   };
-
-  const chartData = {
-    labels: historicalData?.map(data => data.timestamp) || [],
-    datasets: [
-      {
-        label: 'Temperature (°C)',
-        data: historicalData?.map(data => data.temperature) || [],
-        borderColor: theme.palette.error.main,
-        backgroundColor: `${theme.palette.error.main}15`,
-        yAxisID: 'y',
-        tension: 0.4,
-        borderWidth: 2,
-        pointRadius: 3,
-        pointHoverRadius: 6,
-        fill: true,
-      },
-      {
-        label: 'Humidity (%)',
-        data: historicalData?.map(data => data.humidity) || [],
-        borderColor: theme.palette.primary.main,
-        backgroundColor: `${theme.palette.primary.main}15`,
-        yAxisID: 'y1',
-        tension: 0.4,
-        borderWidth: 2,
-        pointRadius: 3,
-        pointHoverRadius: 6,
-        fill: true,
-      },
-    ],
-  };
-
-  if (loading) {
-    return (
-      <Box sx={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: 'calc(100vh - 70px)',
-        flexDirection: 'column',
-        gap: 2,
-        p: { xs: 2, sm: 3 },
-      }}>
-        <CircularProgress size={{ xs: 40, sm: 48 }} />
-        <Typography 
-          variant="body1" 
-          color="text.secondary"
-          textAlign="center"
-        >
-          Loading sensor data...
-        </Typography>
-      </Box>
-    );
-  }
-
-  if (error) {
-    return (
-      <Container maxWidth="lg" sx={{ mt: { xs: 2, sm: 3 }, px: { xs: 2, sm: 3 } }}>
-        <Alert 
-          severity="error"
-          variant="filled"
-          sx={{ 
-            borderRadius: { xs: 1, sm: 2 },
-            '& .MuiAlert-message': {
-              fontSize: { xs: '0.875rem', sm: '1rem' },
-            }
-          }}
-        >
-          Error loading sensor data: {error}
-        </Alert>
-      </Container>
-    );
-  }
 
   return (
     <Container 
@@ -356,92 +320,55 @@ const TemperatureHumidityView = () => {
       >
         Temperature & Humidity Monitor
       </Typography>
-      
+
       <Grid 
         container 
         spacing={{ xs: 2, sm: 3 }}
-        sx={{ 
-          mb: { xs: 2, sm: 3, md: 4 },
-          maxWidth: { xs: '100%', sm: '90%', md: '80%', lg: '70%' },
-          width: '100%',
-        }}
+        sx={{ width: '100%' }}
       >
         <Grid item xs={12} sm={6}>
           <SensorReadingCard
             title="Temperature"
-            value={sensorData?.temperature !== null ? sensorData.temperature.toFixed(1) : null}
-            unit="°C"
+            value={sensorData?.temperature}
             icon={<ThermostatIcon />}
+            unit="°C"
           />
         </Grid>
         <Grid item xs={12} sm={6}>
           <SensorReadingCard
             title="Humidity"
-            value={sensorData?.humidity !== null ? sensorData.humidity.toFixed(1) : null}
-            unit="%"
+            value={sensorData?.humidity}
             icon={<WaterDropIcon />}
+            unit="%"
           />
         </Grid>
+        <Grid item xs={12}>
+          <Fade in timeout={500}>
+            <Paper
+              elevation={3}
+              sx={{
+                p: { xs: 2, sm: 3 },
+                borderRadius: { xs: 2, sm: 3 },
+                bgcolor: 'background.paper',
+                height: '400px',
+                position: 'relative',
+              }}
+            >
+              {loading ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                  <CircularProgress />
+                </Box>
+              ) : error ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                  <Alert severity="error">{error}</Alert>
+                </Box>
+              ) : (
+                <Line data={chartData} options={chartOptions} />
+              )}
+            </Paper>
+          </Fade>
+        </Grid>
       </Grid>
-
-      <Paper
-        elevation={3}
-        sx={{
-          p: { xs: 2, sm: 3 },
-          borderRadius: { xs: 2, sm: 3 },
-          bgcolor: 'background.paper',
-          transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
-          '&:hover': {
-            transform: 'translateY(-4px)',
-            boxShadow: theme.shadows[8],
-          },
-          maxWidth: { xs: '100%', sm: '90%', md: '80%', lg: '70%' },
-          width: '100%',
-        }}
-      >
-        <Typography 
-          variant="h6" 
-          gutterBottom
-          sx={{ 
-            fontWeight: 500,
-            color: theme.palette.text.secondary,
-            mb: { xs: 2, sm: 3 },
-            textAlign: 'center',
-            fontSize: { xs: '1.1rem', sm: '1.25rem' },
-          }}
-        >
-          Historical Data
-        </Typography>
-        <Box sx={{ 
-          height: { xs: 300, sm: 350, md: 400 },
-          position: 'relative' 
-        }}>
-          {historicalData?.length === 0 ? (
-            <Box sx={{ 
-              display: 'flex', 
-              justifyContent: 'center', 
-              alignItems: 'center', 
-              height: '100%',
-              flexDirection: 'column',
-              gap: { xs: 1, sm: 2 },
-            }}>
-              <Typography 
-                variant="body1" 
-                color="text.secondary"
-                sx={{ 
-                  opacity: 0.7,
-                  textAlign: 'center',
-                  fontSize: { xs: '0.875rem', sm: '1rem' },
-                }}
-              >
-                No historical data available
-              </Typography>
-            </Box>
-          ) : (
-            <Line options={chartOptions} data={chartData} />
-          )}
-        </Box>
-      </Paper>
     </Container>
   );
 };
