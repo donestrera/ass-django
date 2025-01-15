@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Box,
   Paper,
@@ -12,6 +12,7 @@ import {
 import SmokingRoomsIcon from '@mui/icons-material/SmokingRooms';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import WarningIcon from '@mui/icons-material/Warning';
+import { useSensor } from '../context/SensorContext';
 
 const SensorStatusCard = ({ isSmoke }) => {
   const theme = useTheme();
@@ -208,9 +209,19 @@ const SensorInfoCard = ({ sensorData }) => {
   );
 };
 
-const SmokeSensorView = ({ sensorData }) => {
+const SmokeSensorView = () => {
   const theme = useTheme();
-  const isSmoke = sensorData?.smokeDetected || false;
+  const { sensorData } = useSensor();
+  const isSmoke = Boolean(sensorData?.smokeDetected);
+
+  // Debug logging
+  useEffect(() => {
+    console.log('Smoke sensor data updated:', {
+      smokeDetected: sensorData?.smokeDetected,
+      connected: sensorData?.connected,
+      lastUpdate: sensorData?.lastUpdate
+    });
+  }, [sensorData]);
 
   return (
     <Container 
