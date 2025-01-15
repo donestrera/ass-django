@@ -26,6 +26,10 @@ import { useSensor } from '../context/SensorContext';
 const MotionStatusCard = ({ isActive, pirEnabled, onToggle }) => {
   const theme = useTheme();
   
+  const handleToggle = (event) => {
+    onToggle();
+  };
+  
   return (
     <Fade in timeout={500}>
       <Paper
@@ -105,17 +109,28 @@ const MotionStatusCard = ({ isActive, pirEnabled, onToggle }) => {
         <FormControlLabel
           control={
             <Switch
-              checked={pirEnabled}
-              onChange={onToggle}
+              checked={Boolean(pirEnabled)}
+              onChange={handleToggle}
               color="primary"
               size="small"
+              sx={{ cursor: 'pointer' }}
             />
           }
           label={
-            <Typography sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
-              Enable Sensor
+            <Typography 
+              sx={{ 
+                fontSize: { xs: '0.875rem', sm: '1rem' },
+                cursor: 'pointer'
+              }}
+            >
+              {pirEnabled ? 'Sensor Enabled' : 'Sensor Disabled'}
             </Typography>
           }
+          sx={{
+            mt: 2,
+            userSelect: 'none',
+            cursor: 'pointer',
+          }}
         />
       </Paper>
     </Fade>
@@ -267,8 +282,8 @@ const MotionSensorView = () => {
       >
         <Grid item xs={12} sm={6}>
           <MotionStatusCard
-            isActive={sensorData?.motionDetected}
-            pirEnabled={sensorData?.pirEnabled}
+            isActive={Boolean(sensorData?.motionDetected)}
+            pirEnabled={Boolean(sensorData?.pirEnabled)}
             onToggle={togglePirSensor}
           />
         </Grid>

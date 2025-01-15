@@ -29,7 +29,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    '192.168.1.4',  # Your computer's IP
+    '192.168.1.2',  # Your computer's IP
     '*',  # Be careful with this in production
 ]
 
@@ -164,11 +164,11 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "http://localhost:3000",
     "http://localhost",
-    "http://192.168.1.4:5173",
-    "http://192.168.1.4:3000",
-    "http://192.168.1.4:80",
-    "http://192.168.1.4",
-    "http://192.168.1.4:8000"
+    "http://192.168.1.2:5173",
+    "http://192.168.1.2:3000",
+    "http://192.168.1.2:80",
+    "http://192.168.1.2",
+    "http://192.168.1.2:8000"
 ]
 
 # REST Framework settings

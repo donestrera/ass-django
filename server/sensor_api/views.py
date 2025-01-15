@@ -93,6 +93,18 @@ class SensorData:
             logger.error(f"Error sending command: {e}")
             return False
 
+    def set_pir_state(self, enabled):
+        """Set the PIR sensor state"""
+        try:
+            command = "PIR_ON" if enabled else "PIR_OFF"
+            if self.send_command(command):
+                self.data['pirEnabled'] = enabled
+                return True
+            return False
+        except Exception as e:
+            logger.error(f"Error setting PIR state: {e}")
+            return False
+
     def read_serial_data(self):
         """Background thread function to continuously read serial data from Arduino"""
         retry_interval = self.INITIAL_RETRY_INTERVAL
