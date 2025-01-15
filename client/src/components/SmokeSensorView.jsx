@@ -1,177 +1,260 @@
 import React from 'react';
 import {
   Box,
-  Typography,
   Paper,
-  useTheme,
-  Alert,
-  AlertTitle,
+  Typography,
   Grid,
-  CircularProgress,
+  useTheme,
+  Container,
+  Fade,
+  useMediaQuery,
 } from '@mui/material';
 import SmokingRoomsIcon from '@mui/icons-material/SmokingRooms';
-import { useSensor } from '../context/SensorContext';
-import { alpha } from '@mui/material/styles';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import WarningIcon from '@mui/icons-material/Warning';
 
-const SmokeStatusIndicator = ({ detected, error }) => {
+const SensorStatusCard = ({ isSmoke }) => {
   const theme = useTheme();
-
-  if (error) {
-    return (
-      <Alert severity="error" sx={{ width: '100%' }}>
-        <AlertTitle>Sensor Error</AlertTitle>
-        Unable to read smoke sensor data. Please check the sensor connection.
-      </Alert>
-    );
-  }
-
+  
   return (
-    <Box
-      sx={{
-        p: 4,
-        borderRadius: 2,
-        bgcolor: 'background.paper',
-        boxShadow: theme.shadows[2],
-        textAlign: 'center',
-        position: 'relative',
-        overflow: 'hidden',
-      }}
-    >
-      <Box
+    <Fade in timeout={500}>
+      <Paper
+        elevation={3}
         sx={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          bgcolor: detected ? alpha(theme.palette.error.main, 0.1) : 'transparent',
-          transition: 'background-color 0.3s ease',
-        }}
-      />
-      <Box
-        sx={{
-          width: 150,
-          height: 150,
-          borderRadius: '50%',
-          margin: '0 auto',
+          p: { xs: 2, sm: 3, md: 4 },
+          borderRadius: { xs: 2, sm: 3 },
+          bgcolor: 'background.paper',
+          height: '100%',
+          minHeight: { xs: 180, sm: 200, md: 220 },
           display: 'flex',
+          flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'center',
-          bgcolor: detected ? theme.palette.error.light : theme.palette.success.light,
-          transition: 'all 0.3s ease',
+          gap: { xs: 1, sm: 1.5, md: 2 },
           position: 'relative',
+          overflow: 'hidden',
+          transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
+          '&:hover': {
+            transform: 'translateY(-4px)',
+            boxShadow: theme.shadows[8],
+          },
         }}
       >
-        <SmokingRoomsIcon
+        <Box
           sx={{
-            fontSize: 80,
-            color: detected ? theme.palette.error.dark : theme.palette.success.dark,
-            animation: detected ? 'pulse 2s infinite' : 'none',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: { xs: 3, sm: 4 },
+            bgcolor: isSmoke ? theme.palette.error.main : theme.palette.success.main,
           }}
         />
-      </Box>
-
-      <Typography variant="h5" sx={{ mt: 3, mb: 1 }}>
-        Smoke Detection Status
-      </Typography>
-
-      <Alert
-        severity={detected ? 'error' : 'success'}
-        variant="filled"
-        sx={{
-          mt: 2,
-          animation: detected ? 'fadeInOut 2s infinite' : 'none',
-        }}
-      >
-        {detected ? 'Smoke Detected!' : 'No Smoke Detected'}
-      </Alert>
-
-      <Box sx={{ mt: 3 }}>
-        <Typography variant="body1" color="text.secondary">
-          Last Updated: {new Date().toLocaleTimeString()}
+        <Box
+          sx={{
+            width: { xs: 60, sm: 70, md: 80 },
+            height: { xs: 60, sm: 70, md: 80 },
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            bgcolor: isSmoke ? `${theme.palette.error.main}15` : `${theme.palette.success.main}15`,
+            mb: { xs: 0.5, sm: 1 },
+          }}
+        >
+          <SmokingRoomsIcon 
+            sx={{ 
+              fontSize: { xs: 30, sm: 35, md: 40 },
+              color: isSmoke ? theme.palette.error.main : theme.palette.success.main,
+            }}
+          />
+        </Box>
+        <Typography 
+          variant="h6" 
+          component="div" 
+          textAlign="center"
+          sx={{ 
+            fontWeight: 500,
+            color: theme.palette.text.secondary,
+            fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' },
+          }}
+        >
+          Smoke Status
         </Typography>
-      </Box>
-    </Box>
+        <Typography 
+          variant="h4" 
+          sx={{ 
+            mt: 'auto',
+            fontWeight: 600,
+            color: isSmoke ? theme.palette.error.main : theme.palette.success.main,
+            textAlign: 'center',
+            fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem' },
+          }}
+        >
+          {isSmoke ? 'Smoke Detected!' : 'No Smoke Detected'}
+        </Typography>
+      </Paper>
+    </Fade>
   );
 };
 
-const SmokeSensorView = () => {
+const SensorInfoCard = ({ sensorData }) => {
   const theme = useTheme();
-  const { sensorData, loading, error } = useSensor();
+  
+  return (
+    <Fade in timeout={500}>
+      <Paper
+        elevation={3}
+        sx={{
+          p: { xs: 2, sm: 3, md: 4 },
+          borderRadius: { xs: 2, sm: 3 },
+          bgcolor: 'background.paper',
+          height: '100%',
+          minHeight: { xs: 180, sm: 200, md: 220 },
+          display: 'flex',
+          flexDirection: 'column',
+          gap: { xs: 2, sm: 3 },
+          position: 'relative',
+          overflow: 'hidden',
+          transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
+          '&:hover': {
+            transform: 'translateY(-4px)',
+            boxShadow: theme.shadows[8],
+          },
+        }}
+      >
+        <Box
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: { xs: 3, sm: 4 },
+            bgcolor: theme.palette.primary.main,
+          }}
+        />
+        
+        <Typography 
+          variant="h6" 
+          component="div"
+          sx={{ 
+            fontWeight: 500,
+            color: theme.palette.text.secondary,
+            fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' },
+          }}
+        >
+          Sensor Information
+        </Typography>
 
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={4}>
+            <Typography 
+              variant="subtitle2" 
+              color="text.secondary"
+              sx={{ mb: 0.5, fontSize: { xs: '0.8rem', sm: '0.9rem' } }}
+            >
+              Status
+            </Typography>
+            <Typography 
+              variant="body1" 
+              sx={{ 
+                fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
+                fontWeight: 500,
+              }}
+            >
+              {sensorData?.connected ? 'Connected' : 'Disconnected'}
+            </Typography>
+          </Grid>
 
-  if (error) {
-    return (
-      <Box sx={{ p: 3 }}>
-        <Alert severity="error">
-          Error loading sensor data: {error}
-        </Alert>
-      </Box>
-    );
-  }
+          <Grid item xs={12} sm={4}>
+            <Typography 
+              variant="subtitle2" 
+              color="text.secondary"
+              sx={{ mb: 0.5, fontSize: { xs: '0.8rem', sm: '0.9rem' } }}
+            >
+              Sensor Type
+            </Typography>
+            <Typography 
+              variant="body1" 
+              sx={{ 
+                fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
+                fontWeight: 500,
+              }}
+            >
+              MQ-2 Gas Sensor
+            </Typography>
+          </Grid>
+
+          <Grid item xs={12} sm={4}>
+            <Typography 
+              variant="subtitle2" 
+              color="text.secondary"
+              sx={{ mb: 0.5, fontSize: { xs: '0.8rem', sm: '0.9rem' } }}
+            >
+              Detection Range
+            </Typography>
+            <Typography 
+              variant="body1" 
+              sx={{ 
+                fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
+                fontWeight: 500,
+              }}
+            >
+              300-10000 ppm
+            </Typography>
+          </Grid>
+        </Grid>
+      </Paper>
+    </Fade>
+  );
+};
+
+const SmokeSensorView = ({ sensorData }) => {
+  const theme = useTheme();
+  const isSmoke = sensorData?.smokeDetected || false;
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h4" gutterBottom>
+    <Container 
+      maxWidth="lg" 
+      sx={{ 
+        mt: { xs: 2, sm: 3, md: 4 },
+        mb: { xs: 2, sm: 3, md: 4 },
+        px: { xs: 2, sm: 3 },
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        minHeight: 'calc(100vh - 70px)',
+      }}
+    >
+      <Typography 
+        variant="h4" 
+        gutterBottom
+        sx={{ 
+          fontWeight: 600,
+          mb: { xs: 2, sm: 3, md: 4 },
+          color: theme.palette.text.primary,
+          textAlign: 'center',
+          fontSize: { xs: '1.5rem', sm: '2rem', md: '2.25rem' },
+        }}
+      >
         Smoke Detection Panel
       </Typography>
 
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={8} lg={6}>
-          <SmokeStatusIndicator
-            detected={sensorData?.smokeDetected}
-            error={!sensorData?.connected}
-          />
+      <Grid 
+        container 
+        spacing={{ xs: 2, sm: 3 }}
+        sx={{ 
+          maxWidth: { xs: '100%', sm: '90%', md: '80%', lg: '70%' },
+          width: '100%',
+        }}
+      >
+        <Grid item xs={12} sm={6}>
+          <SensorStatusCard isSmoke={isSmoke} />
         </Grid>
-
-        <Grid item xs={12} md={4} lg={6}>
-          <Paper
-            sx={{
-              p: 3,
-              height: '100%',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 2,
-            }}
-          >
-            <Typography variant="h6">Sensor Information</Typography>
-            <Box>
-              <Typography variant="body2" color="text.secondary">
-                Status
-              </Typography>
-              <Typography variant="body1">
-                {sensorData?.connected ? 'Connected' : 'Disconnected'}
-              </Typography>
-            </Box>
-            <Box>
-              <Typography variant="body2" color="text.secondary">
-                Sensor Type
-              </Typography>
-              <Typography variant="body1">MQ-2 Gas Sensor</Typography>
-            </Box>
-            <Box>
-              <Typography variant="body2" color="text.secondary">
-                Detection Range
-              </Typography>
-              <Typography variant="body1">300-10000 ppm</Typography>
-            </Box>
-            {sensorData?.smokeDetected && (
-              <Alert severity="warning" sx={{ mt: 2 }}>
-                <AlertTitle>Safety Warning</AlertTitle>
-                Smoke has been detected. Please check the area and ensure proper ventilation.
-              </Alert>
-            )}
-          </Paper>
+        <Grid item xs={12} sm={6}>
+          <SensorInfoCard sensorData={sensorData} />
         </Grid>
       </Grid>
-    </Box>
+    </Container>
   );
 };
 

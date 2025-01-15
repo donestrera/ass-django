@@ -14,6 +14,7 @@ import {
   Fade,
   ListItemIcon,
   Container,
+  useMediaQuery,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import ThermostatIcon from '@mui/icons-material/Thermostat';
@@ -32,6 +33,7 @@ const Navigation = () => {
   const { logout } = useAuth();
   const [menuAnchor, setMenuAnchor] = useState(null);
   const [userMenuAnchor, setUserMenuAnchor] = useState(null);
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const menuItems = [
     {
@@ -95,51 +97,66 @@ const Navigation = () => {
         boxShadow: 1,
       }}
     >
-      <Container maxWidth="lg">
+      <Container maxWidth="xl">
         <Toolbar 
           variant="dense" 
           sx={{ 
-            minHeight: 48,
-            py: 0.5
+            minHeight: { xs: 40, sm: 48, md: 56 },
+            py: { xs: 0.25, sm: 0.5, md: 1 },
+            px: { xs: 0.5, sm: 2, md: 3 }
           }}
         >
-          <IconButton
-            size="small"
-            edge="start"
-            onClick={handleMenuClick}
-            sx={{ mr: 1 }}
-          >
-            <MenuIcon />
-          </IconButton>
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: { xs: 0.5, sm: 1, md: 2 },
+            flexGrow: 1 
+          }}>
+            <IconButton
+              size={isMobile ? "small" : "medium"}
+              edge="start"
+              onClick={handleMenuClick}
+              sx={{ mr: { xs: 0.5, sm: 1, md: 2 } }}
+            >
+              <MenuIcon fontSize={isMobile ? "small" : "medium"} />
+            </IconButton>
 
-          {getCurrentPageIcon()}
-          
-          <Typography 
-            variant="subtitle1" 
-            component="div" 
-            sx={{ 
-              flexGrow: 1,
-              ml: 1,
-              fontSize: '1rem'
-            }}
-          >
-            {getCurrentPageTitle()}
-          </Typography>
+            {React.cloneElement(getCurrentPageIcon(), {
+              fontSize: isMobile ? "small" : "medium",
+              sx: { fontSize: { md: '1.8rem' } }
+            })}
+            
+            <Typography 
+              variant={isMobile ? "body1" : "h6"}
+              component="div" 
+              sx={{ 
+                flexGrow: 1,
+                ml: { xs: 0.5, sm: 1, md: 2 },
+                fontSize: { xs: '0.9rem', sm: '1.1rem', md: '1.3rem' },
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis'
+              }}
+            >
+              {getCurrentPageTitle()}
+            </Typography>
+          </Box>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 1, md: 2 } }}>
             <Tooltip title="User menu">
               <IconButton
-                size="small"
+                size={isMobile ? "small" : "medium"}
                 onClick={handleUserMenuClick}
               >
                 <Avatar 
                   sx={{ 
-                    width: 32, 
-                    height: 32,
-                    bgcolor: theme.palette.primary.main 
+                    width: { xs: 28, sm: 32, md: 40 }, 
+                    height: { xs: 28, sm: 32, md: 40 },
+                    bgcolor: theme.palette.primary.main,
+                    fontSize: { xs: '0.9rem', sm: '1rem', md: '1.2rem' }
                   }}
                 >
-                  {/* Avatar content */}
+                  U
                 </Avatar>
               </IconButton>
             </Tooltip>
@@ -150,19 +167,37 @@ const Navigation = () => {
             open={Boolean(menuAnchor)}
             onClose={handleMenuClose}
             TransitionComponent={Fade}
-            sx={{ mt: 1 }}
+            sx={{ 
+              mt: { xs: 1, md: 2 },
+              '& .MuiPaper-root': {
+                minWidth: { xs: 200, sm: 220, md: 280 },
+                maxWidth: '90vw'
+              }
+            }}
           >
             {menuItems.map((item) => (
               <MenuItem 
                 key={item.path}
                 onClick={() => handleNavigation(item.path)}
-                dense
-                sx={{ py: 1 }}
+                dense={isMobile}
+                sx={{ 
+                  py: { xs: 0.5, sm: 1, md: 1.5 },
+                  px: { xs: 1, sm: 2, md: 3 }
+                }}
               >
-                <ListItemIcon sx={{ minWidth: 36 }}>
-                  {React.cloneElement(item.icon, { fontSize: 'small' })}
+                <ListItemIcon sx={{ minWidth: { xs: 32, sm: 36, md: 44 } }}>
+                  {React.cloneElement(item.icon, { 
+                    fontSize: isMobile ? "small" : "medium",
+                    sx: { fontSize: { md: '1.5rem' } }
+                  })}
                 </ListItemIcon>
-                <Typography variant="body2">
+                <Typography 
+                  variant={isMobile ? "body2" : "body1"}
+                  sx={{ 
+                    fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1.1rem' },
+                    whiteSpace: 'nowrap'
+                  }}
+                >
                   {item.text}
                 </Typography>
               </MenuItem>
@@ -174,17 +209,35 @@ const Navigation = () => {
             open={Boolean(userMenuAnchor)}
             onClose={handleUserMenuClose}
             TransitionComponent={Fade}
-            sx={{ mt: 1 }}
+            sx={{ 
+              mt: { xs: 1, md: 2 },
+              '& .MuiPaper-root': {
+                minWidth: { xs: 160, sm: 180, md: 220 },
+                maxWidth: '90vw'
+              }
+            }}
           >
             <MenuItem 
               onClick={handleLogout}
-              dense
-              sx={{ py: 1 }}
+              dense={isMobile}
+              sx={{ 
+                py: { xs: 0.5, sm: 1, md: 1.5 },
+                px: { xs: 1, sm: 2, md: 3 }
+              }}
             >
-              <ListItemIcon sx={{ minWidth: 36 }}>
-                <LogoutIcon fontSize="small" />
+              <ListItemIcon sx={{ minWidth: { xs: 32, sm: 36, md: 44 } }}>
+                <LogoutIcon 
+                  fontSize={isMobile ? "small" : "medium"}
+                  sx={{ fontSize: { md: '1.5rem' } }}
+                />
               </ListItemIcon>
-              <Typography variant="body2">
+              <Typography 
+                variant={isMobile ? "body2" : "body1"}
+                sx={{ 
+                  fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1.1rem' },
+                  whiteSpace: 'nowrap'
+                }}
+              >
                 Logout
               </Typography>
             </MenuItem>
