@@ -10,6 +10,7 @@ import logging
 from serial.tools import list_ports
 from .models import MotionHistory
 from rest_framework import status
+import os
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -55,8 +56,14 @@ class SensorData:
         try:
             ports = list_ports.comports()
             for port in ports:
-                if 'usbserial' in port.device.lower() or 'usbmodem' in port.device.lower():
+                # Check for common Arduino port patterns
+                if ('usbserial' in port.device.lower() or 
+                    'usbmodem' in port.device.lower() or 
+                    'ttyusb' in port.device.lower()):
                     return port.device
+            # Fallback to a direct check for ttyUSB0
+            if os.path.exists('/dev/ttyUSB0'):
+                return '/dev/ttyUSB0'
         except Exception as e:
             logger.error(f"Error finding Arduino port: {e}")
         return None
@@ -102,17 +109,20 @@ class SensorData:
             try:
                 if not self.serial_connection or not self.serial_connection.is_open:
                     serial_port = self.find_arduino_port() or '/dev/cu.usbmodem1101'
+                    logger.info(f"Attempting to connect to Arduino on port: {serial_port}")
                     self.serial_connection = serial.Serial(serial_port, 9600, timeout=1)
-                    logger.info(f"Connected to Arduino on {serial_port}")
+                    logger.info(f"Successfully connected to Arduino on {serial_port}")
                     self.data['connected'] = True
-                    retry_interval = self.INITIAL_RETRY_INTERVAL  # Reset retry interval on successful connection
+                    retry_interval = self.INITIAL_RETRY_INTERVAL
 
                 while self._should_run and self.serial_connection.is_open:
                     if self.serial_connection.in_waiting:
                         line = self.serial_connection.readline().decode('utf-8').strip()
+                        logger.info(f"Raw data received from Arduino: {line}")
                         if line:  # Only process non-empty lines
                             try:
                                 new_data = json.loads(line)
+                                logger.info(f"Parsed sensor data: {new_data}")
                                 
                                 # Handle motion detection
                                 if 'motionDetected' in new_data:
@@ -128,10 +138,11 @@ class SensorData:
                                 self.data.update(new_data)
                                 self.data['lastUpdate'] = time.strftime('%Y-%m-%d %H:%M:%S')
                                 self.data['connected'] = True
+                                logger.info(f"Updated sensor data state: {self.data}")
                                 
                             except json.JSONDecodeError as e:
                                 logger.warning(f"Invalid JSON data received: {line}, Error: {e}")
-                    time.sleep(0.1)  # Prevent CPU overload
+                    time.sleep(0.1)
                     
             except serial.SerialException as e:
                 logger.error(f"Serial port error: {e}")
