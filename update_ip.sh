@@ -187,7 +187,7 @@ start_django_server() {
     
     # Activate virtual environment and start server
     source venv/bin/activate
-    python manage.py runserver 0.0.0.0:8000 &
+    python3 manage.py runserver 0.0.0.0:8000 &
     local django_pid=$!
     deactivate
     cd ..
@@ -263,4 +263,4 @@ echo "New IP address ($CURRENT_IP) has been updated in all configuration files"
 echo "Services have been restarted"
 echo ""
 echo "You can now access your application at:"
-echo "http://$CURRENT_IP:5173" 
+echo "http://$CURRENT_IP:5173"

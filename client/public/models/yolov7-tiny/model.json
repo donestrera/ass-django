@@ -1,0 +1,21 @@
+{
+  "format": "graph-model",
+  "generatedBy": "1.15.0",
+  "convertedBy": "TensorFlow.js Converter",
+  "modelTopology": {
+    "node": [
+      {
+        "name": "yolov7-tiny",
+        "op": "Placeholder"
+      }
+    ]
+  },
+  "weightsManifest": [
+    {
+      "paths": [
+        "weights.bin"
+      ],
+      "weights": []
+    }
+  ]
+}

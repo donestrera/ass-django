@@ -6,6 +6,7 @@ import Navigation from './components/Navigation';
 import TemperatureHumidityView from './components/TemperatureHumidityView';
 import MotionSensorView from './components/MotionSensorView';
 import SmokeSensorView from './components/SmokeSensorView';
+import CameraView from './components/CameraView';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SensorProvider } from './context/SensorContext';
 
@@ -85,6 +86,14 @@ function App() {
             <Route
               path="/dashboard"
               element={<Navigate to="/dashboard/temperature" replace />}
+            />
+            <Route
+              path="/dashboard/camera"
+              element={
+                <PrivateRoute>
+                  <CameraView />
+                </PrivateRoute>
+              }
             />
             <Route
               path="/dashboard/temperature"

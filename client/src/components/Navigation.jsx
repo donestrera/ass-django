@@ -20,6 +20,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import ThermostatIcon from '@mui/icons-material/Thermostat';
 import DirectionsRunIcon from '@mui/icons-material/DirectionsRun';
 import SmokingRoomsIcon from '@mui/icons-material/SmokingRooms';
+import VideocamIcon from '@mui/icons-material/Videocam';
 import LogoutIcon from '@mui/icons-material/Logout';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
@@ -36,6 +37,11 @@ const Navigation = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const menuItems = [
+    {
+      text: 'Camera Feed',
+      icon: <VideocamIcon />,
+      path: '/dashboard/camera',
+    },
     {
       text: 'Temperature & Humidity',
       icon: <ThermostatIcon />,

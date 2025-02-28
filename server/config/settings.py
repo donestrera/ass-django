@@ -29,7 +29,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    '192.168.1.16',  # Your computer's IP
+    '192.168.1.25',  # Your computer's IP
     '*',  # Be careful with this in production
 ]
 
@@ -88,7 +88,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'research',
         'USER': 'group5',
-        'PASSWORD': '@Group5',
+        'PASSWORD': '@Group555',
         'HOST': 'localhost',
         'PORT': '3306',
     }
@@ -143,10 +143,10 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "http://192.168.1.16:5173",
+    "http://192.168.1.25:5173",
     "http://localhost:8000",
     "http://127.0.0.1:8000",
-    "http://192.168.1.16:8000",
+    "http://192.168.1.25:8000",
 ]
 
 CORS_ALLOW_METHODS = [
@@ -174,10 +174,10 @@ CORS_ALLOW_HEADERS = [
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "http://192.168.1.16:5173",
+    "http://192.168.1.25:5173",
     "http://localhost:8000",
     "http://127.0.0.1:8000",
-    "http://192.168.1.16:8000"
+    "http://192.168.1.25:8000"
 ]
 
 # REST Framework settings
