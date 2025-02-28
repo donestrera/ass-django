@@ -286,7 +286,7 @@ const CameraView = () => {
                         {detections.map((detection, index) => (
                           <Chip
                             key={index}
-                            label={`${detection.label}: ${Math.round(detection.confidence * 100)}%`}
+                            label={`${detection.class}: ${Math.round(detection.score * 100)}%`}
                             color="primary"
                             variant="outlined"
                             sx={{ justifyContent: 'flex-start' }}
