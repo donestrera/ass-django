@@ -87,33 +87,43 @@ export const useCamera = () => {
   const detectObjects = useCallback(async () => {
     if (!model || !videoRef.current || !canvasRef.current) return;
     
-    try {
-      const video = videoRef.current;
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext('2d');
-      
-      // Match canvas size to video
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      
-      // Draw the current video frame
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      
-      // Detect objects with COCO-SSD model
-      const predictions = await model.detect(video);
-      
-      // Draw bounding boxes
-      drawBoundingBoxes(ctx, predictions);
-      
-      // Update state with detections
-      setDetections(predictions);
-    } catch (err) {
-      console.error('Error in object detection:', err);
-      setError(`Detection error: ${err.message}`);
-      setIsDetecting(false);
-    }
-  }, [model]);
+    const runDetection = async () => {
+      try {
+        const video = videoRef.current;
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext('2d');
+        
+        // Match canvas size to video
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        
+        // Draw the current video frame
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        // Detect objects with COCO-SSD model
+        const predictions = await model.detect(video);
+        
+        // Draw bounding boxes
+        drawBoundingBoxes(ctx, predictions);
+        
+        // Update state with detections
+        setDetections(predictions);
+        
+        // Continue the detection loop if still detecting
+        if (isDetecting) {
+          animationFrameRef.current = requestAnimationFrame(runDetection);
+        }
+      } catch (err) {
+        console.error('Error in object detection:', err);
+        setError(`Detection error: ${err.message}`);
+        setIsDetecting(false);
+      }
+    };
+    
+    // Start the detection loop
+    runDetection();
+  }, [model, isDetecting]);
 
   // Draw bounding boxes for COCO-SSD model
   const drawBoundingBoxes = (ctx, predictions) => {
