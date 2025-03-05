@@ -1,6 +1,7 @@
 # IoT Sensor Monitoring System
 
 This project consists of three main components:
+
 - A Django backend server for handling sensor data
 - A React frontend client for visualization
 - An Arduino component for sensor data collection
@@ -18,17 +19,20 @@ This project consists of three main components:
 ### Database Setup (MySQL)
 
 1. Install MySQL Server if not already installed:
+
    ```bash
    sudo apt-get update
    sudo apt-get install mysql-server
    ```
 
 2. Start MySQL service:
+
    ```bash
    sudo service mysql start
    ```
 
 3. Create the database and user:
+
    ```bash
    mysql -u root -p
    CREATE DATABASE research;
@@ -39,33 +43,40 @@ This project consists of three main components:
 
    #port 3306
 
-1. Install MySQL development files:
+   ```
+
+4. Install MySQL development files:
+
    ```bash
    sudo apt-get install python3-dev default-libmysqlclient-dev build-essential
    ```
 
-2. Navigate to the server directory:
+5. Navigate to the server directory:
+
    ```bash
    cd server
    ```
 
-3. Create a Python virtual environment:
+6. Create a Python virtual environment:
+
    ```bash
    python -m venv venv
    source venv/bin/activate  # On Windows use: venv\Scripts\activate
    ```
 
-4. Install Python dependencies:
+7. Install Python dependencies:
+
    ```bash
    pip install -r requirements.txt
    ```
 
-5. Run database migrations:
+8. Run database migrations:
+
    ```bash
    python manage.py migrate
    ```
 
-6. Start the Django development server:
+9. Start the Django development server:
    ```bash
    python manage.py runserver
    ```
@@ -75,11 +86,13 @@ The server will start at `http://localhost:8000`
 ### Frontend Setup (React Client)
 
 1. Navigate to the client directory:
+
    ```bash
    cd client
    ```
 
 2. Install Node.js dependencies:
+
    ```bash
    npm install
    # or if using yarn:
@@ -115,6 +128,8 @@ The client will start at `http://localhost:5173`
 │   ├── src/          # Source code
 │   └── public/       # Static assets
 └── arduino/          # Arduino sensor code
+└── yolov7/          # YOLOv7 tiny model
+│   ├── weights.bin  # Weights for the YOLOv7 model
 ```
 
 ## Features
@@ -142,4 +157,4 @@ The client will start at `http://localhost:5173`
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details. 
+This project is licensed under the MIT License - see the LICENSE file for details.

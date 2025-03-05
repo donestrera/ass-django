@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Box, 
   Typography, 
@@ -6,7 +6,6 @@ import {
   Paper, 
   Grid, 
   CircularProgress, 
-  Alert, 
   Button,
   Chip,
   Stack,
@@ -18,16 +17,27 @@ import {
   Select,
   MenuItem,
   IconButton,
-  Tooltip
+  Tooltip,
+  Snackbar,
+  Alert as MuiAlert,
+  Switch,
+  FormControlLabel
 } from '@mui/material';
 import VideocamIcon from '@mui/icons-material/Videocam';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import VideoLibraryIcon from '@mui/icons-material/VideoLibrary';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import PersonIcon from '@mui/icons-material/Person';
+import VolumeUpIcon from '@mui/icons-material/VolumeUp';
+import VolumeOffIcon from '@mui/icons-material/VolumeOff';
 import { useCamera } from '../hooks/useCamera';
+import { playNotificationSound } from '../utils/soundUtils';
 
 const CameraView = () => {
   const theme = useTheme();
+  const [notificationOpen, setNotificationOpen] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  
   const {
     videoRef,
     canvasRef,
@@ -37,6 +47,7 @@ const CameraView = () => {
     cameraActive,
     isDetecting,
     detections,
+    personDetected,
     startCamera,
     useMockCamera,
     stopCamera,
@@ -46,6 +57,31 @@ const CameraView = () => {
     selectCamera,
     getAvailableCameras
   } = useCamera();
+
+  // Handle notification display when a person is detected
+  useEffect(() => {
+    if (personDetected && isDetecting) {
+      setNotificationOpen(true);
+      
+      // Play sound notification if enabled
+      if (soundEnabled) {
+        playNotificationSound();
+      }
+    }
+  }, [personDetected, isDetecting, soundEnabled]);
+
+  // Handle closing the notification
+  const handleCloseNotification = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setNotificationOpen(false);
+  };
+
+  // Toggle sound notifications
+  const handleToggleSound = () => {
+    setSoundEnabled(prev => !prev);
+  };
 
   return (
     <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
@@ -74,7 +110,7 @@ const CameraView = () => {
           </Typography>
 
           {error && (
-            <Alert 
+            <MuiAlert 
               severity="error" 
               sx={{ mb: 3 }}
               action={
@@ -105,7 +141,7 @@ const CameraView = () => {
                   </ul>
                 </Typography>
               )}
-            </Alert>
+            </MuiAlert>
           )}
 
           {/* Camera Selection */}
@@ -275,22 +311,51 @@ const CameraView = () => {
                     flexDirection: 'column'
                   }}
                 >
-                  <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <SmartToyIcon fontSize="small" color="primary" />
-                    Detected Objects
-                  </Typography>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                    <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0 }}>
+                      <SmartToyIcon fontSize="small" color="primary" />
+                      Detected Objects
+                    </Typography>
+                    
+                    <FormControlLabel
+                      control={
+                        <Switch 
+                          size="small"
+                          checked={soundEnabled}
+                          onChange={handleToggleSound}
+                          icon={<VolumeOffIcon fontSize="small" />}
+                          checkedIcon={<VolumeUpIcon fontSize="small" />}
+                        />
+                      }
+                      label={
+                        <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center' }}>
+                          {soundEnabled ? "Sound On" : "Sound Off"}
+                        </Typography>
+                      }
+                      sx={{ m: 0 }}
+                    />
+                  </Box>
                   
                   {detections.length > 0 ? (
                     <Box sx={{ mt: 2, flex: 1, overflowY: 'auto' }}>
                       <Stack spacing={1}>
-                        {detections.map((detection, index) => (
+                        {detections.filter(detection => detection.class === 'person').length > 0 && (
                           <Chip
-                            key={index}
-                            label={`${detection.class}: ${Math.round(detection.score * 100)}%`}
+                            label={`People detected: ${detections.filter(detection => detection.class === 'person').length}`}
                             color="primary"
-                            variant="outlined"
-                            sx={{ justifyContent: 'flex-start' }}
+                            sx={{ justifyContent: 'flex-start', fontWeight: 'bold' }}
                           />
+                        )}
+                        {detections.map((detection, index) => (
+                          detection.class !== 'person' && (
+                            <Chip
+                              key={index}
+                              label={`${detection.class}`}
+                              color="primary"
+                              variant="outlined"
+                              sx={{ justifyContent: 'flex-start' }}
+                            />
+                          )
                         ))}
                       </Stack>
                     </Box>
@@ -317,6 +382,25 @@ const CameraView = () => {
           )}
         </Paper>
       </Fade>
+      
+      {/* Person Detection Notification */}
+      <Snackbar
+        open={notificationOpen}
+        autoHideDuration={6000}
+        onClose={handleCloseNotification}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <MuiAlert 
+          onClose={handleCloseNotification} 
+          severity="warning" 
+          sx={{ width: '100%', display: 'flex', alignItems: 'center' }}
+          icon={<PersonIcon />}
+          variant="filled"
+          elevation={6}
+        >
+          Person Detected!
+        </MuiAlert>
+      </Snackbar>
     </Container>
   );
 };

@@ -30,10 +30,12 @@ export const useCamera = () => {
   const [detections, setDetections] = useState([]);
   const [availableCameras, setAvailableCameras] = useState([]);
   const [selectedCameraId, setSelectedCameraId] = useState(null);
+  const [personDetected, setPersonDetected] = useState(false);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
   const animationFrameRef = useRef(null);
+  const lastNotificationTimeRef = useRef(0);
 
   // Load the object detection model
   const loadModel = useCallback(async () => {
@@ -110,6 +112,19 @@ export const useCamera = () => {
         // Update state with detections
         setDetections(predictions);
         
+        // Check if a person is detected
+        const peopleDetected = predictions.some(prediction => prediction.class === 'person');
+        
+        // Only trigger notification if we weren't detecting a person before but now we are
+        // Also limit notifications to once every 5 seconds
+        const currentTime = Date.now();
+        if (peopleDetected && !personDetected && (currentTime - lastNotificationTimeRef.current > 5000)) {
+          setPersonDetected(true);
+          lastNotificationTimeRef.current = currentTime;
+        } else if (!peopleDetected && personDetected) {
+          setPersonDetected(false);
+        }
+        
         // Continue the detection loop if still detecting
         if (isDetecting) {
           animationFrameRef.current = requestAnimationFrame(runDetection);
@@ -123,15 +138,14 @@ export const useCamera = () => {
     
     // Start the detection loop
     runDetection();
-  }, [model, isDetecting]);
+  }, [model, isDetecting, personDetected]);
 
   // Draw bounding boxes for COCO-SSD model
   const drawBoundingBoxes = (ctx, predictions) => {
     predictions.forEach(prediction => {
       // Extract prediction information
       const [x, y, width, height] = prediction.bbox;
-      const score = prediction.score;
-      const label = `${prediction.class} (${Math.round(score * 100)}%)`;
+      const label = `${prediction.class}`;
       
       // Draw rectangle
       ctx.strokeStyle = '#FF0000';
@@ -439,6 +453,7 @@ export const useCamera = () => {
     cameraActive,
     isDetecting,
     detections,
+    personDetected,
     startCamera,
     useMockCamera,
     stopCamera,

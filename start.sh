@@ -102,7 +102,6 @@ update_nginx_conf() {
 
     backup_file "$file"
     
-    # Update server_name and proxy_pass
     if [[ "$OSTYPE" == "darwin"* ]]; then
         # macOS version of sed
         sed -i '' "s/192\.168\.[0-9]\{1,3\}\.[0-9]\{1,3\}/$CURRENT_IP/g" "$file"
@@ -112,6 +111,22 @@ update_nginx_conf() {
     fi
     
     echo "Updated Nginx configuration with new IP: $CURRENT_IP"
+    
+    # Test Nginx configuration if nginx is installed
+    if command -v nginx >/dev/null 2>&1; then
+        nginx -t
+        if [ $? -eq 0 ]; then
+            echo "Nginx configuration test successful"
+            sudo nginx -s reload
+            echo "Nginx reloaded successfully"
+        else
+            echo "Error in Nginx configuration. Restoring backup..."
+            restore_backup "$file"
+            return 1
+        fi
+    else
+        echo "Note: Nginx not installed, skipping configuration test"
+    fi
 }
 
 # Update Vite configuration
@@ -124,7 +139,6 @@ update_vite_config() {
 
     backup_file "$file"
     
-    # Update server.host
     if [[ "$OSTYPE" == "darwin"* ]]; then
         # macOS version of sed
         sed -i '' "s/192\.168\.[0-9]\{1,3\}\.[0-9]\{1,3\}/$CURRENT_IP/g" "$file"
@@ -138,22 +152,88 @@ update_vite_config() {
 
 # Update environment files
 update_env_files() {
-    # Update .env files if they exist
-    for env_file in ".env" "client/.env" "server/.env"; do
-        if [ -f "$env_file" ]; then
-            backup_file "$env_file"
-            
-            if [[ "$OSTYPE" == "darwin"* ]]; then
-                # macOS version of sed
-                sed -i '' "s/192\.168\.[0-9]\{1,3\}\.[0-9]\{1,3\}/$CURRENT_IP/g" "$env_file"
-            else
-                # Linux version of sed
-                sed -i "s/192\.168\.[0-9]\{1,3\}\.[0-9]\{1,3\}/$CURRENT_IP/g" "$env_file"
-            fi
-            
-            echo "Updated $env_file with new IP: $CURRENT_IP"
+    local file="client/.env"
+    if [ ! -f "$file" ]; then
+        echo "Error: Environment file not found at $file"
+        return 1
+    fi
+
+    backup_file "$file"
+    
+    # Update the API URL in .env file while preserving port numbers
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        # macOS version of sed
+        sed -i '' "s|http://192\.168\.[0-9]\{1,3\}\.[0-9]\{1,3\}:[0-9]\{1,5\}|http://$CURRENT_IP:8000|g" "$file"
+        sed -i '' "s|ws://192\.168\.[0-9]\{1,3\}\.[0-9]\{1,3\}:[0-9]\{1,5\}|ws://$CURRENT_IP:8000|g" "$file"
+    else
+        # Linux version of sed
+        sed -i "s|http://192\.168\.[0-9]\{1,3\}\.[0-9]\{1,3\}:[0-9]\{1,5\}|http://$CURRENT_IP:8000|g" "$file"
+        sed -i "s|ws://192\.168\.[0-9]\{1,3\}\.[0-9]\{1,3\}:[0-9]\{1,5\}|ws://$CURRENT_IP:8000|g" "$file"
+    fi
+    
+    echo "Updated .env file with new IP: $CURRENT_IP"
+}
+
+# Function to start Django server
+start_django_server() {
+    echo "Starting Django server..."
+    cd server || exit 1
+    
+    # Check if port 8000 is in use
+    if check_port 8000; then
+        echo "Port 8000 is in use. Stopping existing process..."
+        kill_port 8000
+    fi
+    
+    # Activate virtual environment and start server
+    source venv/bin/activate
+    python3 manage.py runserver 0.0.0.0:8000 &
+    local django_pid=$!
+    deactivate
+    cd ..
+    
+    # Wait for Django server to start
+    echo "Waiting for Django server to start..."
+    for i in {1..10}; do
+        if curl -s http://$CURRENT_IP:8000/api/auth/login/ >/dev/null; then
+            echo "Django server started successfully"
+            return 0
         fi
+        sleep 1
     done
+    
+    echo "Warning: Django server may not have started properly"
+    return 1
+}
+
+# Function to start Vite server
+start_vite_server() {
+    echo "Starting Vite development server..."
+    cd client || exit 1
+    
+    # Check if port 5173 is in use
+    if check_port 5173; then
+        echo "Port 5173 is in use. Stopping existing process..."
+        kill_port 5173
+    fi
+    
+    # Start Vite with explicit host binding
+    npm run dev -- --host $CURRENT_IP &
+    local vite_pid=$!
+    cd ..
+    
+    # Wait for Vite server to start
+    echo "Waiting for Vite server to start..."
+    for i in {1..10}; do
+        if curl -s http://$CURRENT_IP:5173 >/dev/null; then
+            echo "Vite server started successfully"
+            return 0
+        fi
+        sleep 1
+    done
+    
+    echo "Warning: Vite server may not have started properly"
+    return 1
 }
 
 # Main execution
@@ -168,15 +248,19 @@ update_nginx_conf || echo "Warning: Failed to update Nginx configuration"
 update_vite_config || echo "Warning: Failed to update Vite configuration"
 update_env_files || echo "Warning: Failed to update environment files"
 
-# Kill any existing processes on these ports (optional, can be removed if not needed)
+echo "Restarting services..."
+
+# Kill any existing processes
 kill_port 8000
 kill_port 5173
 
+# Start servers
+start_django_server
+start_vite_server
+
 echo "IP update process completed!"
 echo "New IP address ($CURRENT_IP) has been updated in all configuration files"
+echo "Services have been restarted"
 echo ""
 echo "You can now access your application at:"
-echo "http://$CURRENT_IP:5173 (after manually starting the servers)"
-echo ""
-echo "To start the Django server: cd server && source venv/bin/activate && python3 manage.py runserver 0.0.0.0:8000"
-echo "To start the Vite server: cd client && npm run dev -- --host $CURRENT_IP"
+echo "http://$CURRENT_IP:5173"
