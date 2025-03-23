@@ -31,11 +31,14 @@ export const useCamera = () => {
   const [availableCameras, setAvailableCameras] = useState([]);
   const [selectedCameraId, setSelectedCameraId] = useState(null);
   const [personDetected, setPersonDetected] = useState(false);
+  const [personDetectionTime, setPersonDetectionTime] = useState(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
   const animationFrameRef = useRef(null);
   const lastNotificationTimeRef = useRef(0);
+  const wsRef = useRef(null);
+  const personAlertTimeoutRef = useRef(null);
 
   // Load the object detection model
   const loadModel = useCallback(async () => {
@@ -85,6 +88,78 @@ export const useCamera = () => {
     }
   }, []);
 
+  // Connect to WebSocket for broadcasting detection data
+  const connectToWebSocket = useCallback(() => {
+    try {
+      // Close existing connection if any
+      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+        wsRef.current.close();
+      }
+      
+      // Determine WebSocket URL based on current location
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const host = window.location.host;
+      const wsUrl = `${protocol}//${host}/ws/camera/`;
+      
+      console.log(`Connecting to WebSocket at ${wsUrl}`);
+      const ws = new WebSocket(wsUrl);
+      
+      ws.onopen = () => {
+        console.log('WebSocket connection established');
+        // Identify as producer if running on localhost
+        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        if (isLocalhost) {
+          ws.send(JSON.stringify({ type: 'producer' }));
+        } else {
+          ws.send(JSON.stringify({ type: 'consumer' }));
+        }
+      };
+      
+      ws.onclose = (event) => {
+        console.log(`WebSocket connection closed: ${event.code} ${event.reason}`);
+        // Try to reconnect after a delay
+        setTimeout(() => {
+          if (cameraActive) {
+            connectToWebSocket();
+          }
+        }, 5000);
+      };
+      
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+      };
+      
+      wsRef.current = ws;
+    } catch (err) {
+      console.error('Error connecting to WebSocket:', err);
+    }
+  }, [cameraActive]);
+
+  // Send detection data to WebSocket
+  const sendDetectionData = useCallback((predictions) => {
+    try {
+      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+        // Filter and format detection data
+        const detectionData = {
+          type: 'detection',
+          data: {
+            timestamp: new Date().toISOString(),
+            detections: predictions.map(pred => ({
+              class: pred.class,
+              confidence: pred.score,
+              bbox: pred.bbox
+            })),
+            personDetected: predictions.some(pred => pred.class === 'person')
+          }
+        };
+        
+        wsRef.current.send(JSON.stringify(detectionData));
+      }
+    } catch (err) {
+      console.error('Error sending detection data:', err);
+    }
+  }, []);
+
   // Detect objects in the video stream
   const detectObjects = useCallback(async () => {
     if (!model || !videoRef.current || !canvasRef.current) return;
@@ -104,13 +179,16 @@ export const useCamera = () => {
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         
         // Detect objects with COCO-SSD model
-        const predictions = await model.detect(video);
+        const predictions = await model.detect(video, undefined, 0.5); // Increased confidence threshold
         
         // Draw bounding boxes
         drawBoundingBoxes(ctx, predictions);
         
         // Update state with detections
         setDetections(predictions);
+        
+        // Send detection data to WebSocket
+        sendDetectionData(predictions);
         
         // Check if a person is detected
         const peopleDetected = predictions.some(prediction => prediction.class === 'person');
@@ -120,9 +198,27 @@ export const useCamera = () => {
         const currentTime = Date.now();
         if (peopleDetected && !personDetected && (currentTime - lastNotificationTimeRef.current > 5000)) {
           setPersonDetected(true);
+          setPersonDetectionTime(new Date().toLocaleTimeString());
           lastNotificationTimeRef.current = currentTime;
+          
+          // Clear any existing timeout
+          if (personAlertTimeoutRef.current) {
+            clearTimeout(personAlertTimeoutRef.current);
+          }
+          
+          // Notify the server about person detection to trigger server-side camera capture
+          notifyServerAboutPersonDetection();
         } else if (!peopleDetected && personDetected) {
-          setPersonDetected(false);
+          // Set a timeout to reset personDetected after 3 seconds of no detection
+          // This prevents flickering when detection is intermittent
+          if (personAlertTimeoutRef.current) {
+            clearTimeout(personAlertTimeoutRef.current);
+          }
+          
+          personAlertTimeoutRef.current = setTimeout(() => {
+            setPersonDetected(false);
+            setPersonDetectionTime(null);
+          }, 3000);
         }
         
         // Continue the detection loop if still detecting
@@ -138,29 +234,112 @@ export const useCamera = () => {
     
     // Start the detection loop
     runDetection();
-  }, [model, isDetecting, personDetected]);
+  }, [model, isDetecting, personDetected, sendDetectionData]);
 
   // Draw bounding boxes for COCO-SSD model
   const drawBoundingBoxes = (ctx, predictions) => {
+    // First, check if we need to add a person detection alert overlay
+    const personPredictions = predictions.filter(pred => pred.class === 'person');
+    const hasPersons = personPredictions.length > 0;
+    
+    if (hasPersons) {
+      // Add a semi-transparent red border around the entire canvas
+      const canvas = ctx.canvas;
+      const borderWidth = Math.max(5, Math.min(canvas.width, canvas.height) * 0.02); // 2% of smaller dimension, min 5px
+      
+      // Save current context state
+      ctx.save();
+      
+      // Draw alert border
+      ctx.strokeStyle = 'rgba(255, 0, 0, 0.7)';
+      ctx.lineWidth = borderWidth;
+      ctx.strokeRect(0, 0, canvas.width, canvas.height);
+      
+      // Add alert banner at the top
+      const bannerHeight = Math.max(30, canvas.height * 0.06); // 6% of height, min 30px
+      ctx.fillStyle = 'rgba(255, 0, 0, 0.7)';
+      ctx.fillRect(0, 0, canvas.width, bannerHeight);
+      
+      // Add text
+      const fontSize = Math.max(16, Math.min(canvas.width, canvas.height) * 0.03); // 3% of smaller dimension, min 16px
+      ctx.font = `bold ${fontSize}px Arial`;
+      ctx.fillStyle = 'white';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      
+      const alertText = `PERSON DETECTED (${personPredictions.length})`;
+      ctx.fillText(alertText, canvas.width / 2, bannerHeight / 2);
+      
+      // Add timestamp at bottom right
+      const timestamp = new Date().toLocaleTimeString();
+      const timestampFontSize = fontSize * 0.7;
+      ctx.font = `${timestampFontSize}px Arial`;
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText(timestamp, canvas.width - 10, canvas.height - 10);
+      
+      // Restore context state
+      ctx.restore();
+    }
+    
+    // Now draw individual bounding boxes
     predictions.forEach(prediction => {
       // Extract prediction information
       const [x, y, width, height] = prediction.bbox;
-      const label = `${prediction.class}`;
+      const isPerson = prediction.class === 'person';
+      const confidence = Math.round(prediction.score * 100);
+      const label = `${prediction.class} ${confidence}%`;
       
-      // Draw rectangle
-      ctx.strokeStyle = '#FF0000';
-      ctx.lineWidth = 4;
+      // Use different colors for persons vs other objects
+      ctx.strokeStyle = isPerson ? '#FF0000' : '#00BFFF';
+      ctx.lineWidth = isPerson ? 4 : 2;
       ctx.strokeRect(x, y, width, height);
       
       // Draw label background
-      ctx.fillStyle = '#FF0000';
+      ctx.fillStyle = isPerson ? '#FF0000' : '#00BFFF';
       const textWidth = ctx.measureText(label).width;
       ctx.fillRect(x, y - 25, textWidth + 10, 25);
       
       // Draw label text
       ctx.fillStyle = '#FFFFFF';
-      ctx.font = '18px Arial';
+      ctx.font = isPerson ? 'bold 18px Arial' : '16px Arial';
       ctx.fillText(label, x + 5, y - 7);
+      
+      // For persons, add additional visual cues
+      if (isPerson) {
+        // Draw corner highlights
+        const cornerSize = Math.min(width, height) * 0.2;
+        ctx.strokeStyle = '#FFFF00';
+        ctx.lineWidth = 2;
+        
+        // Top-left corner
+        ctx.beginPath();
+        ctx.moveTo(x, y + cornerSize);
+        ctx.lineTo(x, y);
+        ctx.lineTo(x + cornerSize, y);
+        ctx.stroke();
+        
+        // Top-right corner
+        ctx.beginPath();
+        ctx.moveTo(x + width - cornerSize, y);
+        ctx.lineTo(x + width, y);
+        ctx.lineTo(x + width, y + cornerSize);
+        ctx.stroke();
+        
+        // Bottom-right corner
+        ctx.beginPath();
+        ctx.moveTo(x + width, y + height - cornerSize);
+        ctx.lineTo(x + width, y + height);
+        ctx.lineTo(x + width - cornerSize, y + height);
+        ctx.stroke();
+        
+        // Bottom-left corner
+        ctx.beginPath();
+        ctx.moveTo(x + cornerSize, y + height);
+        ctx.lineTo(x, y + height);
+        ctx.lineTo(x, y + height - cornerSize);
+        ctx.stroke();
+      }
     });
   };
 
@@ -243,6 +422,9 @@ export const useCamera = () => {
   const startCamera = useCallback(async () => {
     try {
       setError(null);
+      
+      // Connect to WebSocket for broadcasting detection data
+      connectToWebSocket();
       
       // Check if mediaDevices API is available
       if (!navigator.mediaDevices) {
@@ -444,6 +626,31 @@ export const useCamera = () => {
     loadModel();
   }, [loadModel]);
 
+  // Add this function to notify the server
+  const notifyServerAboutPersonDetection = async () => {
+    try {
+      const response = await fetch('/api/person-detected/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+        },
+        body: JSON.stringify({
+          timestamp: new Date().toISOString(),
+          confidence: detections.find(d => d.class === 'person')?.score || 0
+        })
+      });
+      
+      if (response.ok) {
+        console.log('Server notified about person detection');
+      } else {
+        console.error('Failed to notify server:', await response.text());
+      }
+    } catch (error) {
+      console.error('Error notifying server about person detection:', error);
+    }
+  };
+
   return {
     videoRef,
     canvasRef,
@@ -454,6 +661,7 @@ export const useCamera = () => {
     isDetecting,
     detections,
     personDetected,
+    personDetectionTime,
     startCamera,
     useMockCamera,
     stopCamera,

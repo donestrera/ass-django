@@ -1,0 +1,15 @@
+2025-03-06 07:05:45,638 - camera - INFO - Starting camera capture with save_dir=media/captured_images, filename=test_direct_capture.jpg
+2025-03-06 07:05:45,638 - camera - WARNING - save_dir is not an absolute path: media/captured_images
+2025-03-06 07:05:45,638 - camera - INFO - Converted to absolute path: /Users/donleonardestrera/Code/ass-django/server/media/captured_images
+2025-03-06 07:05:45,638 - camera - INFO - Ensured directory exists: /Users/donleonardestrera/Code/ass-django/server/media/captured_images
+2025-03-06 07:05:45,638 - camera - INFO - Initializing camera...
+2025-03-06 07:05:47,004 - camera - INFO - Waiting 2 seconds before capture...
+2025-03-06 07:05:49,010 - camera - INFO - Capturing frame...
+2025-03-06 07:05:49,044 - camera - INFO - Frame captured successfully. Shape: (720, 1280, 3)
+2025-03-06 07:05:49,044 - camera - INFO - Saving image to: /Users/donleonardestrera/Code/ass-django/server/media/captured_images/test_direct_capture.jpg
+2025-03-06 07:05:49,052 - camera - INFO - Image saved successfully to: /Users/donleonardestrera/Code/ass-django/server/media/captured_images/test_direct_capture.jpg
+2025-03-06 07:05:49,052 - camera - INFO - File size: 308715 bytes
+2025-03-06 07:05:49,052 - camera - INFO - Uploading image to API: http://localhost:8000/api/upload-image/
+2025-03-06 07:05:49,063 - camera - ERROR - Error uploading image: 401 Client Error: Unauthorized for url: http://localhost:8000/api/upload-image/
+2025-03-06 07:05:49,118 - camera - INFO - Camera released
+2025-03-06 07:05:49,120 - camera - INFO - All windows destroyed

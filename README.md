@@ -34,9 +34,9 @@ This project consists of three main components:
 3. Create the database and user:
 
    ```bash
-   mysql -u root -p
+   mysql -u root
    CREATE DATABASE research;
-   CREATE USER 'group5'@'%' IDENTIFIED BY '@Group5';
+   CREATE USER 'group5'@'%' IDENTIFIED BY '@Group555';
    GRANT ALL PRIVILEGES ON research.* TO 'group5'@'%';
    FLUSH PRIVILEGES;
    exit;
