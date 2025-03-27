@@ -30,7 +30,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    '192.168.1.2',  # Your computer's IP
+    '10.0.0.216',  # Your computer's IP
     '*',  # Be careful with this in production
 ]
 
@@ -148,10 +148,10 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "http://192.168.1.2:5173",
+    "http://10.0.0.216:5173",
     "http://localhost:8000",
     "http://127.0.0.1:8000",
-    "http://192.168.1.2:8000",
+    "http://10.0.0.216:8000",
 ]
 
 CORS_ALLOW_METHODS = [
@@ -179,10 +179,10 @@ CORS_ALLOW_HEADERS = [
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "http://192.168.1.2:5173",
+    "http://10.0.0.216:5173",
     "http://localhost:8000",
     "http://127.0.0.1:8000",
-    "http://192.168.1.2:8000"
+    "http://10.0.0.216:8000"
 ]
 
 # REST Framework settings
