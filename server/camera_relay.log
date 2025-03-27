@@ -53,3 +53,13 @@ OSError: [Errno 48] error while attempting to bind on address ('0.0.0.0', 8765):
 2025-03-27 22:36:26,394 - camera_relay - INFO - Health check: 0 clients connected, producer: False
 2025-03-27 22:37:26,398 - camera_relay - INFO - Health check: 0 clients connected, producer: False
 2025-03-27 22:38:26,400 - camera_relay - INFO - Health check: 0 clients connected, producer: False
+2025-03-27 22:39:26,401 - camera_relay - INFO - Health check: 0 clients connected, producer: False
+2025-03-27 22:40:26,402 - camera_relay - INFO - Health check: 0 clients connected, producer: False
+2025-03-27 22:41:26,403 - camera_relay - INFO - Health check: 0 clients connected, producer: False
+2025-03-27 22:42:26,404 - camera_relay - INFO - Health check: 0 clients connected, producer: False
+2025-03-27 22:43:26,408 - camera_relay - INFO - Health check: 0 clients connected, producer: False
+2025-03-27 22:44:26,409 - camera_relay - INFO - Health check: 0 clients connected, producer: False
+2025-03-27 22:45:26,410 - camera_relay - INFO - Health check: 0 clients connected, producer: False
+2025-03-27 22:46:26,412 - camera_relay - INFO - Health check: 0 clients connected, producer: False
+2025-03-27 22:47:26,415 - camera_relay - INFO - Health check: 0 clients connected, producer: False
+2025-03-27 22:48:26,419 - camera_relay - INFO - Health check: 0 clients connected, producer: False
