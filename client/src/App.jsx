@@ -7,6 +7,7 @@ import TemperatureHumidityView from './components/TemperatureHumidityView';
 import MotionSensorView from './components/MotionSensorView';
 import SmokeSensorView from './components/SmokeSensorView';
 import CameraView from './components/CameraView';
+import CameraLogView from './components/CameraLogView';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SensorProvider } from './context/SensorContext';
 
@@ -92,6 +93,14 @@ function App() {
               element={
                 <PrivateRoute>
                   <CameraView />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/dashboard/camera-logs"
+              element={
+                <PrivateRoute>
+                  <CameraLogView />
                 </PrivateRoute>
               }
             />

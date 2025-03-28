@@ -1,0 +1,70 @@
+2025-03-27 22:20:59,343 - camera_relay - WARNING - Could not increase process priority
+2025-03-27 22:20:59,343 - camera_relay - INFO - Starting camera relay server on port 8765
+2025-03-27 22:20:59,596 - camera_relay - INFO - Health check: 0 clients connected, producer: False
+2025-03-27 22:20:59,597 - websockets.server - INFO - server listening on 0.0.0.0:8765
+2025-03-27 22:20:59,597 - camera_relay - INFO - Camera relay server is running at ws://0.0.0.0:8765
+2025-03-27 22:21:59,599 - camera_relay - INFO - Health check: 0 clients connected, producer: False
+2025-03-27 22:22:59,600 - camera_relay - INFO - Health check: 0 clients connected, producer: False
+2025-03-27 22:23:59,601 - camera_relay - INFO - Health check: 0 clients connected, producer: False
+2025-03-27 22:24:59,604 - camera_relay - INFO - Health check: 0 clients connected, producer: False
+2025-03-27 22:25:59,607 - camera_relay - INFO - Health check: 0 clients connected, producer: False
+2025-03-27 22:26:59,609 - camera_relay - INFO - Health check: 0 clients connected, producer: False
+2025-03-27 22:27:59,612 - camera_relay - INFO - Health check: 0 clients connected, producer: False
+2025-03-27 22:28:59,614 - camera_relay - INFO - Health check: 0 clients connected, producer: False
+2025-03-27 22:29:22,147 - camera_relay - INFO - Received signal 15, shutting down...
+2025-03-27 22:29:24,257 - camera_relay - WARNING - Could not increase process priority
+2025-03-27 22:29:24,257 - camera_relay - INFO - Starting camera relay server on port 8765
+2025-03-27 22:29:24,276 - camera_relay - INFO - Health check: 0 clients connected, producer: False
+2025-03-27 22:29:24,276 - camera_relay - ERROR - Failed to start server (attempt 1/5): [Errno 48] error while attempting to bind on address ('0.0.0.0', 8765): address already in use
+2025-03-27 22:29:24,276 - camera_relay - INFO - Retrying in 2 seconds...
+2025-03-27 22:29:26,279 - camera_relay - ERROR - Failed to start server (attempt 2/5): [Errno 48] error while attempting to bind on address ('0.0.0.0', 8765): address already in use
+2025-03-27 22:29:26,279 - camera_relay - INFO - Retrying in 4 seconds...
+2025-03-27 22:29:30,282 - camera_relay - ERROR - Failed to start server (attempt 3/5): [Errno 48] error while attempting to bind on address ('0.0.0.0', 8765): address already in use
+2025-03-27 22:29:30,284 - camera_relay - INFO - Retrying in 8 seconds...
+2025-03-27 22:29:38,286 - camera_relay - ERROR - Failed to start server (attempt 4/5): [Errno 48] error while attempting to bind on address ('0.0.0.0', 8765): address already in use
+2025-03-27 22:29:38,287 - camera_relay - INFO - Retrying in 16 seconds...
+2025-03-27 22:29:54,290 - camera_relay - ERROR - Failed to start server (attempt 5/5): [Errno 48] error while attempting to bind on address ('0.0.0.0', 8765): address already in use
+2025-03-27 22:29:54,291 - camera_relay - ERROR - Maximum retries reached. Could not start server.
+2025-03-27 22:29:54,294 - camera_relay - ERROR - Unhandled exception: [Errno 48] error while attempting to bind on address ('0.0.0.0', 8765): address already in use
+2025-03-27 22:29:54,302 - camera_relay - ERROR - Traceback (most recent call last):
+  File "/Users/donleonardestrera/Code/ass-django/server/camera_relay.py", line 212, in <module>
+    asyncio.run(main())
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/asyncio/runners.py", line 44, in run
+    return loop.run_until_complete(main)
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/asyncio/base_events.py", line 642, in run_until_complete
+    return future.result()
+  File "/Users/donleonardestrera/Code/ass-django/server/camera_relay.py", line 174, in main
+    server = await websockets.serve(handle_connection, "0.0.0.0", port)
+  File "/Users/donleonardestrera/Library/Python/3.9/lib/python/site-packages/websockets/asyncio/server.py", line 831, in __await_impl__
+    server = await self.create_server
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/asyncio/base_events.py", line 1494, in create_server
+    raise OSError(err.errno, 'error while attempting '
+OSError: [Errno 48] error while attempting to bind on address ('0.0.0.0', 8765): address already in use
+
+2025-03-27 22:29:59,615 - camera_relay - INFO - Server is shutting down
+2025-03-27 22:29:59,617 - websockets.server - INFO - server closing
+2025-03-27 22:29:59,618 - camera_relay - INFO - Health check: 0 clients connected, producer: False
+2025-03-27 22:29:59,619 - websockets.server - INFO - server closed
+2025-03-27 22:35:26,373 - camera_relay - WARNING - Could not increase process priority
+2025-03-27 22:35:26,373 - camera_relay - INFO - Starting camera relay server on port 8765
+2025-03-27 22:35:26,391 - camera_relay - INFO - Health check: 0 clients connected, producer: False
+2025-03-27 22:35:26,391 - websockets.server - INFO - server listening on 0.0.0.0:8765
+2025-03-27 22:35:26,391 - camera_relay - INFO - Camera relay server is running at ws://0.0.0.0:8765
+2025-03-27 22:36:26,394 - camera_relay - INFO - Health check: 0 clients connected, producer: False
+2025-03-27 22:37:26,398 - camera_relay - INFO - Health check: 0 clients connected, producer: False
+2025-03-27 22:38:26,400 - camera_relay - INFO - Health check: 0 clients connected, producer: False
+2025-03-27 22:39:26,401 - camera_relay - INFO - Health check: 0 clients connected, producer: False
+2025-03-27 22:40:26,402 - camera_relay - INFO - Health check: 0 clients connected, producer: False
+2025-03-27 22:41:26,403 - camera_relay - INFO - Health check: 0 clients connected, producer: False
+2025-03-27 22:42:26,404 - camera_relay - INFO - Health check: 0 clients connected, producer: False
+2025-03-27 22:43:26,408 - camera_relay - INFO - Health check: 0 clients connected, producer: False
+2025-03-27 22:44:26,409 - camera_relay - INFO - Health check: 0 clients connected, producer: False
+2025-03-27 22:45:26,410 - camera_relay - INFO - Health check: 0 clients connected, producer: False
+2025-03-27 22:46:26,412 - camera_relay - INFO - Health check: 0 clients connected, producer: False
+2025-03-27 22:47:26,415 - camera_relay - INFO - Health check: 0 clients connected, producer: False
+2025-03-27 22:48:26,419 - camera_relay - INFO - Health check: 0 clients connected, producer: False
+2025-03-27 22:49:26,420 - camera_relay - INFO - Health check: 0 clients connected, producer: False
+2025-03-27 22:50:26,422 - camera_relay - INFO - Health check: 0 clients connected, producer: False
+2025-03-27 22:51:26,424 - camera_relay - INFO - Health check: 0 clients connected, producer: False
+2025-03-27 22:52:26,426 - camera_relay - INFO - Health check: 0 clients connected, producer: False
+2025-03-27 22:53:26,427 - camera_relay - INFO - Health check: 0 clients connected, producer: False

@@ -76,6 +76,44 @@ const useSensorData = () => {
     }
   }, []);
 
+  // Fetch motion history from the server
+  const fetchMotionHistory = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const response = await fetch(`${API_URL}/motion-history/`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch motion history: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      // Transform the data to include detection type and confidence
+      const transformedHistory = data.map(item => ({
+        id: item.id,
+        timestamp: new Date(item.timestamp).toLocaleString(),
+        temperature: item.temperature,
+        humidity: item.humidity,
+        detection_type: item.detection_type || 'pir', // Default to 'pir' for backward compatibility
+        confidence: item.confidence,
+        is_active: item.is_active
+      }));
+      
+      setMotionHistory(transformedHistory);
+    } catch (error) {
+      console.error('Error fetching motion history:', error);
+    }
+  }, []);
+
   const fetchData = useCallback(async () => {
     // Cancel any in-flight requests
     if (abortControllerRef.current) {
@@ -129,14 +167,9 @@ const useSensorData = () => {
       setLoading(false);
       setRetryCount(0);
 
-      // If motion is detected, add to history
+      // If motion is detected, fetch the updated motion history
       if (transformedData.motionDetected && !sensorData.motionDetected) {
-        const historyEntry = {
-          timestamp: new Date().toLocaleString(),
-          temperature: transformedData.temperature,
-          humidity: transformedData.humidity
-        };
-        setMotionHistory(prev => [historyEntry, ...prev]);
+        fetchMotionHistory();
       }
 
       // Adjust polling interval based on smoke detection
@@ -163,7 +196,7 @@ const useSensorData = () => {
         debouncedSetSensorData(lastDataRef.current);
       }
     }
-  }, [debouncedSetSensorData, retryCount, sensorData.motionDetected, updateHistoricalData]);
+  }, [debouncedSetSensorData, fetchMotionHistory, retryCount, sensorData.motionDetected, updateHistoricalData]);
 
   const togglePirSensor = useCallback(async () => {
     try {
@@ -217,6 +250,7 @@ const useSensorData = () => {
 
   useEffect(() => {
     fetchData();
+    fetchMotionHistory(); // Fetch motion history on initial load
     startPolling(POLLING_INTERVAL);
 
     return () => {
@@ -229,7 +263,7 @@ const useSensorData = () => {
       }
       debouncedSetSensorData.cancel();
     };
-  }, [fetchData, startPolling, debouncedSetSensorData]);
+  }, [fetchData, fetchMotionHistory, startPolling, debouncedSetSensorData]);
 
   return { 
     sensorData, 
@@ -240,7 +274,8 @@ const useSensorData = () => {
     motionHistory,
     historicalData,
     togglePirSensor,
-    clearMotionHistory
+    clearMotionHistory,
+    refreshMotionHistory: fetchMotionHistory
   };
 };
 

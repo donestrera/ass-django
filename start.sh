@@ -174,6 +174,43 @@ update_env_files() {
     echo "Updated .env file with new IP: $CURRENT_IP"
 }
 
+# Function to start camera relay server
+start_camera_relay() {
+    echo "Starting camera relay server..."
+    cd server || exit 1
+    
+    # Check if port 8765 is in use
+    if check_port 8765; then
+        echo "Port 8765 is in use. Stopping existing process..."
+        kill_port 8765
+    fi
+    
+    # Activate virtual environment and start camera relay server
+    source venv/bin/activate
+    
+    # Start camera relay server in background
+    echo "Starting camera relay server on port 8765..."
+    python3 camera_relay.py &
+    local relay_pid=$!
+    
+    # Store PID for potential cleanup
+    echo $relay_pid > camera_relay.pid
+    
+    # Wait for camera relay server to start
+    echo "Waiting for camera relay server to start..."
+    sleep 3
+    
+    # Check if process is still running
+    if ps -p $relay_pid > /dev/null; then
+        echo "Camera relay server started successfully (PID: $relay_pid)"
+    else
+        echo "Warning: Camera relay server may not have started properly"
+    fi
+    
+    deactivate
+    cd ..
+}
+
 # Function to start Django server
 start_django_server() {
     echo "Starting Django server..."
@@ -185,8 +222,59 @@ start_django_server() {
         kill_port 8000
     fi
     
+    # Check if MySQL service is running and start it if not
+    echo "Checking MySQL service status..."
+    if command -v systemctl &> /dev/null; then
+        # For systems using systemd
+        if ! systemctl is-active --quiet mysql; then
+            echo "MySQL service is not running. Starting MySQL..."
+            sudo systemctl start mysql
+            # Wait for MySQL to fully start
+            sleep 5
+        else
+            echo "MySQL service is already running."
+        fi
+    elif command -v service &> /dev/null; then
+        # For systems using service command
+        if ! service mysql status &> /dev/null; then
+            echo "MySQL service is not running. Starting MySQL..."
+            sudo service mysql start
+            # Wait for MySQL to fully start
+            sleep 5
+        else
+            echo "MySQL service is already running."
+        fi
+    else
+        echo "Warning: Could not check MySQL service status. Make sure MySQL is running."
+    fi
+    
     # Activate virtual environment and start server
     source venv/bin/activate
+    
+    # Check database connection
+    echo "Checking database connection..."
+    if python3 -c "
+import sys
+try:
+    import django
+    django.setup()
+    from django.db import connections
+    connections['default'].cursor()
+    print('Database connection successful')
+    sys.exit(0)
+except Exception as e:
+    print(f'Database connection failed: {e}')
+    sys.exit(1)
+" 2>/dev/null; then
+        echo "Database connection verified."
+    else
+        echo "Warning: Could not connect to the database. Check MySQL configuration and credentials."
+        echo "Attempting to start Django server anyway..."
+    fi
+    
+    # Start Django server on 0.0.0.0 to allow both localhost and IP access
+    # Note: For camera access, users should use localhost or HTTPS
+    echo "Note: For camera access, use http://localhost:8000 or set up HTTPS with Nginx"
     python3 manage.py runserver 0.0.0.0:8000 &
     local django_pid=$!
     deactivate
@@ -254,13 +342,85 @@ echo "Restarting services..."
 kill_port 8000
 kill_port 5173
 
+# Ensure MySQL is running (macOS specific)
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    echo "Running MySQL startup script for macOS..."
+    
+    # Check if MySQL is running
+    if ! pgrep -x "mysqld" > /dev/null; then
+        echo "MySQL service is not running. Starting MySQL..."
+        
+        # Try different methods to start MySQL based on installation type
+        if [ -d "/opt/homebrew/opt/mysql" ]; then
+            # Apple Silicon Mac with Homebrew
+            echo "Detected MySQL installed via Homebrew on Apple Silicon"
+            brew services start mysql
+        elif [ -d "/usr/local/opt/mysql" ]; then
+            # Intel Mac with Homebrew
+            echo "Detected MySQL installed via Homebrew on Intel Mac"
+            brew services start mysql
+        elif [ -d "/usr/local/mysql/bin" ]; then
+            # MySQL installed from official package
+            echo "Detected MySQL installed from official package"
+            sudo /usr/local/mysql/support-files/mysql.server start
+        else
+            echo "Could not determine MySQL installation method."
+            echo "Trying common startup methods..."
+            
+            # Try mysql.server if it exists in PATH
+            if command -v mysql.server &> /dev/null; then
+                echo "Starting MySQL via mysql.server in PATH..."
+                sudo mysql.server start
+            else
+                echo "ERROR: Could not start MySQL. Please start it manually before running the application."
+                echo "Common commands to start MySQL:"
+                echo "  - brew services start mysql (if installed via Homebrew)"
+                echo "  - sudo mysql.server start (if installed via package)"
+                exit 1
+            fi
+        fi
+        
+        # Wait for MySQL to start
+        echo "Waiting for MySQL to start..."
+        sleep 5
+        
+        # Verify MySQL is running
+        if ! pgrep -x "mysqld" > /dev/null; then
+            echo "ERROR: MySQL failed to start. Please check MySQL logs and configuration."
+            exit 1
+        fi
+    else
+        echo "MySQL service is already running."
+    fi
+    
+    # Check if the database exists and create it if needed
+    echo "Checking database..."
+    ./check_database.sh
+    if [ $? -ne 0 ]; then
+        echo "Error: Database check failed. Please check the database configuration."
+        exit 1
+    fi
+fi
+
 # Start servers
 start_django_server
+start_camera_relay
 start_vite_server
 
 echo "IP update process completed!"
 echo "New IP address ($CURRENT_IP) has been updated in all configuration files"
 echo "Services have been restarted"
 echo ""
-echo "You can now access your application at:"
-echo "http://$CURRENT_IP:5173"
+echo "You can access your application in two ways:"
+echo ""
+echo "1. Via IP address (Note: Camera access will require HTTPS setup):"
+echo "   http://$CURRENT_IP:5173"
+echo ""
+echo "2. Via localhost (Camera access will work without HTTPS):"
+echo "   http://localhost:5173"
+echo ""
+echo "For camera access via IP address, run the HTTPS setup script:"
+echo "   ./setup_https.sh"
+echo ""
+echo "Then access your application via HTTPS:"
+echo "   https://$CURRENT_IP"

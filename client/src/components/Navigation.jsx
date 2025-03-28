@@ -24,6 +24,7 @@ import VideocamIcon from '@mui/icons-material/Videocam';
 import LogoutIcon from '@mui/icons-material/Logout';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -41,6 +42,11 @@ const Navigation = () => {
       text: 'Camera Feed',
       icon: <VideocamIcon />,
       path: '/dashboard/camera',
+    },
+    {
+      text: 'Camera Logs',
+      icon: <PhotoLibraryIcon />,
+      path: '/dashboard/camera-logs',
     },
     {
       text: 'Temperature & Humidity',

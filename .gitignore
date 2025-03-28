@@ -1,0 +1,5 @@
+# captured images
+/captured_images/
+*.png
+*.jpg
+*.jpeg 

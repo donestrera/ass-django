@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
+import os  # Add this import for os.path.join
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -29,7 +30,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    '192.168.212.97',  # Your computer's IP
+    '10.0.0.216',  # Your computer's IP
     '*',  # Be careful with this in production
 ]
 
@@ -131,6 +132,10 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+# Media files (Uploads)
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
@@ -143,10 +148,10 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "http://192.168.212.97:5173",
+    "http://10.0.0.216:5173",
     "http://localhost:8000",
     "http://127.0.0.1:8000",
-    "http://192.168.212.97:8000",
+    "http://10.0.0.216:8000",
 ]
 
 CORS_ALLOW_METHODS = [
@@ -174,10 +179,10 @@ CORS_ALLOW_HEADERS = [
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "http://192.168.212.97:5173",
+    "http://10.0.0.216:5173",
     "http://localhost:8000",
     "http://127.0.0.1:8000",
-    "http://192.168.212.97:8000"
+    "http://10.0.0.216:8000"
 ]
 
 # REST Framework settings
