@@ -1,10 +1,11 @@
 # IoT Sensor Monitoring System
 
-This project consists of three main components:
+This project consists of four main components:
 
 - A Django backend server for handling sensor data
 - A React frontend client for visualization
 - An Arduino component for sensor data collection
+- YOLOv7 person detection for security monitoring
 
 ## Prerequisites
 
@@ -13,6 +14,7 @@ This project consists of three main components:
 - npm or yarn
 - Arduino IDE (for sensor setup)
 - MySQL Server 8.0 or higher
+- PyTorch for YOLOv7 object detection
 
 ## Project Setup
 
@@ -140,6 +142,44 @@ The client will start at `http://localhost:5173`
 - Material-UI based responsive interface
 - Chart.js integration for data graphs
 - MySQL database for robust data storage
+- YOLOv7 object detection for person detection
+- Automatic image capture and logging when people are detected
+- Real-time notifications for security events
+
+## Person Detection Setup
+
+The project includes YOLOv7 person detection capabilities:
+
+1. Navigate to the yolov7 directory:
+
+   ```bash
+   cd yolov7
+   ```
+
+2. Install the required dependencies:
+
+   ```bash
+   chmod +x install_yolo_deps.sh
+   ./install_yolo_deps.sh
+   ```
+
+3. Configure detection settings in `server/.env`:
+
+   ```
+   # Enable background mode (direct camera capture)
+   YOLO_BACKGROUND_MODE=1
+   
+   # Enable automatic image capturing
+   AUTO_CAPTURE=1
+   
+   # Capture images when a person is detected
+   CAPTURE_ON_DETECTION=1
+   
+   # Save detection images with bounding boxes
+   SAVE_DETECTION_IMAGES=1
+   ```
+
+4. For more details about the YOLOv7 detection feature, see [YOLOv7 README](yolov7/README.md)
 
 ## Development
 

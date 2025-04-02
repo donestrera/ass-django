@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.dondon.frontend-yolo</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/zsh</string>
+        <string>-l</string>
+        <string>-c</string>
+        <string>cd /Users/dondon/Code/ass-django/client/ && /opt/homebrew/bin/npm run dev</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>StandardErrorPath</key>
+    <string>/Users/dondon/Library/Logs/frontend-yolo.log</string>
+    <key>StandardOutPath</key>
+    <string>/Users/dondon/Library/Logs/frontend-yolo.log</string>
+    <key>WorkingDirectory</key>
+    <string>/Users/dondon/Code/ass-django/client/</string>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>NODE_ENV</key>
+        <string>development</string>
+        <key>PORT</key>
+        <string>5173</string>
+        <key>REACT_APP_API_URL</key>
+        <string>http://localhost:8000</string>
+        <key>PATH</key>
+        <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+        <key>HOME</key>
+        <string>/Users/dondon</string>
+        <key>SHELL</key>
+        <string>/bin/zsh</string>
+    </dict>
+</dict>
+</plist>

@@ -6,10 +6,13 @@ import PropTypes from 'prop-types';
  * CameraRelay component provides an alternative way to access the camera
  * when direct access might be restricted (e.g., in non-secure contexts or certain browsers)
  */
-const CameraRelay = ({ active, width, height, cameraId, onFrame, onError }) => {
-  const canvasRef = useRef(null);
+const CameraRelay = ({ active, width, height, cameraId, onFrame, onError, canvasRef }) => {
+  const localCanvasRef = useRef(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // Use the provided canvasRef if available, otherwise use the local one
+  const actualCanvasRef = canvasRef || localCanvasRef;
   
   useEffect(() => {
     if (!active) {
@@ -17,7 +20,7 @@ const CameraRelay = ({ active, width, height, cameraId, onFrame, onError }) => {
       return;
     }
     
-    const canvas = canvasRef.current;
+    const canvas = actualCanvasRef.current;
     if (!canvas) return;
     
     const ctx = canvas.getContext('2d');
@@ -63,7 +66,7 @@ const CameraRelay = ({ active, width, height, cameraId, onFrame, onError }) => {
     return () => {
       cancelAnimationFrame(animationFrameId);
     };
-  }, [active, cameraId, onFrame, onError]);
+  }, [active, cameraId, onFrame, onError, actualCanvasRef]);
   
   if (error) {
     return (
@@ -84,16 +87,18 @@ const CameraRelay = ({ active, width, height, cameraId, onFrame, onError }) => {
   
   return (
     <Box sx={{ position: 'relative', width: '100%', height: '100%' }}>
-      <canvas 
-        ref={canvasRef}
-        width={width || 640}
-        height={height || 480}
-        style={{ 
-          width: '100%',
-          height: '100%',
-          objectFit: 'contain'
-        }}
-      />
+      {!canvasRef && (
+        <canvas 
+          ref={localCanvasRef}
+          width={width || 640}
+          height={height || 480}
+          style={{ 
+            width: '100%',
+            height: '100%',
+            objectFit: 'contain'
+          }}
+        />
+      )}
       
       {isLoading && active && (
         <Box sx={{ 
@@ -123,7 +128,8 @@ CameraRelay.propTypes = {
   height: PropTypes.number,
   cameraId: PropTypes.string,
   onFrame: PropTypes.func,
-  onError: PropTypes.func
+  onError: PropTypes.func,
+  canvasRef: PropTypes.object
 };
 
 CameraRelay.defaultProps = {

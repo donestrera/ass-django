@@ -170,16 +170,36 @@ export const useCamera = () => {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
         
+        // Ensure video is ready and has valid dimensions before processing
+        if (video.videoWidth === 0 || video.videoHeight === 0 || !video.readyState || video.readyState < 2) {
+          console.log("Video not ready yet or dimensions invalid, waiting...");
+          animationFrameRef.current = requestAnimationFrame(runDetection);
+          return;
+        }
+        
         // Match canvas size to video
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
+        canvas.width = video.videoWidth || 640;
+        canvas.height = video.videoHeight || 480;
         
         // Draw the current video frame
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         
         // Detect objects with COCO-SSD model
-        const predictions = await model.detect(video, undefined, 0.5); // Increased confidence threshold
+        let predictions;
+        try {
+          // Try to detect using video element first
+          predictions = await model.detect(video, undefined, 0.5);
+        } catch (detectionErr) {
+          console.warn('Error detecting from video element, trying canvas fallback:', detectionErr);
+          try {
+            // Fallback to using the canvas element for detection if video element fails
+            predictions = await model.detect(canvas, undefined, 0.5);
+          } catch (canvasErr) {
+            console.error('Canvas detection also failed:', canvasErr);
+            throw new Error(`Detection failed on both video and canvas: ${canvasErr.message}`);
+          }
+        }
         
         // Draw bounding boxes
         drawBoundingBoxes(ctx, predictions);
@@ -470,11 +490,31 @@ export const useCamera = () => {
             .then(() => {
               setCameraActive(true);
               console.log('Camera started successfully');
+              
+              // Set initial canvas dimensions based on video dimensions
+              if (canvasRef.current && videoRef.current.videoWidth && videoRef.current.videoHeight) {
+                canvasRef.current.width = videoRef.current.videoWidth;
+                canvasRef.current.height = videoRef.current.videoHeight;
+                console.log(`Setting initial canvas dimensions to ${canvasRef.current.width}x${canvasRef.current.height}`);
+              } else {
+                // Set fallback dimensions if video dimensions aren't available
+                if (canvasRef.current) {
+                  canvasRef.current.width = 640;
+                  canvasRef.current.height = 480;
+                  console.log('Using fallback canvas dimensions 640x480');
+                }
+              }
             })
             .catch(err => {
               console.error('Error playing video:', err);
               setError('Failed to start video playback. Please try again.');
             });
+        };
+        
+        // Add error handling for video element
+        videoRef.current.onerror = (err) => {
+          console.error('Video element error:', err);
+          setError(`Video error: ${err}`);
         };
       }
     } catch (err) {
@@ -564,10 +604,15 @@ export const useCamera = () => {
       setCameraActive(false);
       setIsDetecting(false);
       
-      // Clear canvas
+      // Clear and reset canvas with valid dimensions
       const canvas = canvasRef.current;
       if (canvas) {
         const ctx = canvas.getContext('2d');
+        // Ensure canvas has valid dimensions
+        if (canvas.width === 0 || canvas.height === 0) {
+          canvas.width = 640;
+          canvas.height = 480;
+        }
         ctx.clearRect(0, 0, canvas.width, canvas.height);
       }
       
@@ -629,27 +674,55 @@ export const useCamera = () => {
   // Add this function to notify the server
   const notifyServerAboutPersonDetection = async () => {
     try {
-      const response = await fetch('/api/person-detected/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-        },
-        body: JSON.stringify({
-          timestamp: new Date().toISOString(),
-          confidence: detections.find(d => d.class === 'person')?.score || 0
-        })
-      });
-      
-      if (response.ok) {
-        console.log('Server notified about person detection');
-      } else {
-        console.error('Failed to notify server:', await response.text());
-      }
+      // Don't make an API call here since we're now handling this in CameraView.jsx
+      console.log('Person detection event triggered in useCamera hook');
+      // We're leaving this function as a placeholder for future extension
+      return true;
     } catch (error) {
-      console.error('Error notifying server about person detection:', error);
+      console.error('Error in person detection hook:', error);
+      return false;
     }
   };
+  
+  // Add function to capture an image from the camera feed
+  const captureImage = useCallback(() => {
+    if (!cameraActive || !videoRef.current || !canvasRef.current) {
+      console.warn('Cannot capture image: camera not active or references not available');
+      return null;
+    }
+    
+    try {
+      const canvas = canvasRef.current;
+      const video = videoRef.current;
+      
+      // Ensure canvas dimensions match video
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      
+      // Get canvas context and draw current video frame
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      
+      // Convert to data URL (base64)
+      const imageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+      console.log('Image captured successfully');
+      
+      // Return the data URL
+      return imageDataUrl;
+    } catch (err) {
+      console.error('Error capturing image:', err);
+      return null;
+    }
+  }, [cameraActive]);
+  
+  // Add function to toggle the camera (stop if running, start if stopped)
+  const toggleCamera = useCallback(() => {
+    if (cameraActive) {
+      stopCamera();
+    } else {
+      startCamera();
+    }
+  }, [cameraActive, startCamera, stopCamera]);
 
   return {
     videoRef,
@@ -669,6 +742,8 @@ export const useCamera = () => {
     availableCameras,
     selectedCameraId,
     selectCamera,
-    getAvailableCameras
+    getAvailableCameras,
+    captureImage,
+    toggleCamera
   };
 };

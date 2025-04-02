@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.dondon.yolo-detection</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/zsh</string>
+        <string>-l</string>
+        <string>-c</string>
+        <string>cd /Users/dondon/Code/ass-django/server/ && source venv/bin/activate && python3 camera_relay.py</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>StandardErrorPath</key>
+    <string>/Users/dondon/Library/Logs/yolo-detection.log</string>
+    <key>StandardOutPath</key>
+    <string>/Users/dondon/Library/Logs/yolo-detection.log</string>
+    <key>WorkingDirectory</key>
+    <string>/Users/dondon/Code/ass-django/server</string>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PYTHONPATH</key>
+        <string>/Users/dondon/Code/ass-django/server</string>
+        <key>WS_PORT</key>
+        <string>8765</string>
+        <key>WS_HOST</key>
+        <string>127.0.0.1</string>
+        <key>PATH</key>
+        <string>/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin:/usr/local/bin</string>
+        <key>HOME</key>
+        <string>/Users/dondon</string>
+        <key>SHELL</key>
+        <string>/bin/zsh</string>
+        <key>BACKGROUND_MODE</key>
+        <string>true</string>
+    </dict>
+</dict>
+</plist>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { 
   Box, 
   Typography, 
@@ -22,7 +22,8 @@ import {
   Alert as MuiAlert,
   Switch,
   FormControlLabel,
-  AlertTitle
+  AlertTitle,
+  Alert
 } from '@mui/material';
 import VideocamIcon from '@mui/icons-material/Videocam';
 import VideocamOffIcon from '@mui/icons-material/VideocamOff';
@@ -52,12 +53,43 @@ const shouldUseCameraRelay = () => {
          window.location.hostname !== 'localhost';
 };
 
+// Helper function to notify server about person detection
+const notifyServerAboutPerson = async (confidence = 0.85) => {
+  try {
+    const accessToken = localStorage.getItem('accessToken');
+    const response = await fetch('/api/person-detected/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': accessToken ? `Bearer ${accessToken}` : ''
+      },
+      body: JSON.stringify({
+        timestamp: new Date().toISOString(),
+        confidence
+      })
+    });
+    
+    if (response.ok) {
+      console.log('Person detection notification sent to server successfully');
+      return true;
+    } else {
+      console.error('Failed to notify server about person detection:', await response.text());
+      return false;
+    }
+  } catch (error) {
+    console.error('Error notifying server about person detection:', error);
+    return false;
+  }
+};
+
 const CameraView = () => {
   const theme = useTheme();
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [useCameraRelay, setUseCameraRelay] = useState(shouldUseCameraRelay());
-  const isLocalhost = window.location.hostname === 'localhost';
+  const isLocalhost = useMemo(() => window.location.hostname === 'localhost', []);
+  const [lastCaptureTime, setLastCaptureTime] = useState(0);
+  const captureTimeoutRef = useRef(null);
   
   const {
     videoRef,
@@ -78,13 +110,27 @@ const CameraView = () => {
     selectCamera,
     getAvailableCameras,
     toggleCamera,
-    captureImage,
-    mockCamera,
-    setMockCamera
+    captureImage
   } = useCamera();
 
   const videoContainerRef = useRef(null);
-  const onFrameRef = useRef(null);
+
+  // Automatically start camera and detection when component mounts - using useCallback
+  useEffect(() => {
+    // Wait for model to load before starting camera
+    if (!isModelLoading && modelLoadingProgress === 100 && !cameraActive) {
+      console.log('Auto-starting camera...');
+      startCamera();
+    }
+  }, [isModelLoading, modelLoadingProgress, cameraActive, startCamera]);
+
+  // Start detection when camera becomes active
+  useEffect(() => {
+    if (cameraActive && !isDetecting) {
+      console.log('Auto-starting detection...');
+      toggleDetection();
+    }
+  }, [cameraActive, isDetecting, toggleDetection]);
 
   // Handle notification display when a person is detected
   useEffect(() => {
@@ -95,30 +141,308 @@ const CameraView = () => {
       if (soundEnabled) {
         playNotificationSound();
       }
+
+      // Trigger image capture with rate limiting (max once every 5 seconds)
+      const currentTime = Date.now();
+      if (currentTime - lastCaptureTime > 5000) {
+        // Clear any existing timeout
+        if (captureTimeoutRef.current) {
+          clearTimeout(captureTimeoutRef.current);
+        }
+
+        // Set a timeout to capture after short delay to allow camera to stabilize
+        captureTimeoutRef.current = setTimeout(async () => {
+          console.log('Triggering automatic image capture on person detection');
+          
+          // Try the server API first
+          const apiSuccess = await notifyServerAboutPerson();
+          
+          // If API fails, use local capture
+          if (!apiSuccess) {
+            captureImage();
+          }
+          
+          setLastCaptureTime(Date.now());
+        }, 500);
+      }
     }
-  }, [personDetected, isDetecting, soundEnabled]);
+
+    // Cleanup function
+    return () => {
+      if (captureTimeoutRef.current) {
+        clearTimeout(captureTimeoutRef.current);
+      }
+    };
+  }, [personDetected, isDetecting, soundEnabled, captureImage, lastCaptureTime]);
 
   // Handle closing the notification
-  const handleCloseNotification = (event, reason) => {
+  const handleCloseNotification = useCallback((event, reason) => {
     if (reason === 'clickaway') {
       return;
     }
     setNotificationOpen(false);
-  };
+  }, []);
 
   // Toggle sound notifications
-  const handleToggleSound = () => {
+  const handleToggleSound = useCallback(() => {
     setSoundEnabled(prev => !prev);
-  };
+  }, []);
 
-  // Add a function to handle frames from the camera relay
-  const handleRelayFrame = (canvas) => {
-    // Process the frame as needed
+  // Memoize camera relay handling for better performance
+  const handleRelayFrame = useCallback((canvas) => {
     if (canvasRef.current) {
       const ctx = canvasRef.current.getContext('2d');
       ctx.drawImage(canvas, 0, 0, canvasRef.current.width, canvasRef.current.height);
     }
-  };
+  }, [canvasRef]);
+
+  // Toggle camera relay 
+  const handleToggleCameraRelay = useCallback(() => {
+    if (cameraActive) {
+      toggleCamera();
+      setTimeout(() => {
+        setUseCameraRelay(prev => !prev);
+        toggleCamera();
+      }, 500);
+    } else {
+      setUseCameraRelay(prev => !prev);
+    }
+  }, [cameraActive, toggleCamera]);
+
+  // Memoize detection filter for better performance
+  const peopleDetected = useMemo(() => 
+    detections.filter(detection => detection.class === 'person').length,
+    [detections]
+  );
+
+  // Memoize other objects for better performance
+  const otherObjectsDetected = useMemo(() => 
+    detections.filter(detection => detection.class !== 'person'),
+    [detections]
+  );
+
+  // Render loading indicator
+  const renderLoading = useMemo(() => (
+    <Box 
+      sx={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        flexDirection: 'column',
+        my: 4
+      }}
+    >
+      <CircularProgress 
+        variant="determinate" 
+        value={modelLoadingProgress} 
+        size={80} 
+        thickness={4}
+        sx={{ mb: 2 }}
+      />
+      <Typography variant="h6">
+        Loading Object Detection Model ({modelLoadingProgress}%)
+      </Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+        This may take a few moments depending on your internet speed
+      </Typography>
+    </Box>
+  ), [modelLoadingProgress]);
+
+  // Memoize the camera feed component to prevent unnecessary re-renders
+  const renderCameraFeed = useMemo(() => (
+    <Box
+      ref={videoContainerRef}
+      sx={{
+        position: 'relative',
+        backgroundColor: 'black',
+        borderRadius: 1,
+        overflow: 'hidden',
+        aspectRatio: '4/3',
+        width: '100%',
+      }}
+    >
+      {useCameraRelay ? (
+        <CameraRelay 
+          active={cameraActive} 
+          onFrame={handleRelayFrame}
+          canvasRef={canvasRef}
+        />
+      ) : (
+        <Box sx={{ position: 'relative', width: '100%', height: '100%' }}>
+          <video
+            ref={videoRef}
+            style={{
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              transform: 'scaleX(-1)', // Mirror the camera
+              display: cameraActive ? 'block' : 'none',
+            }}
+            playsInline
+            muted
+          />
+          <canvas
+            ref={canvasRef}
+            style={{
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+              // No transform here to keep text readable
+              zIndex: 2,
+            }}
+          />
+          
+          {/* Camera controls overlay */}
+          <Box 
+            sx={{ 
+              position: 'absolute', 
+              bottom: 0, 
+              right: 0, 
+              m: 1,
+              zIndex: 10, 
+              display: 'flex',
+              gap: 1
+            }}
+          >
+            {/* Capture image button */}
+            <Tooltip title="Capture image">
+              <IconButton
+                color="primary"
+                onClick={captureImage}
+                disabled={!cameraActive}
+                sx={{ 
+                  bgcolor: 'rgba(0, 0, 0, 0.5)',
+                  '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.7)' },
+                  '&.Mui-disabled': { 
+                    bgcolor: 'rgba(0, 0, 0, 0.2)', 
+                    color: 'rgba(255, 255, 255, 0.3)' 
+                  } 
+                }}
+              >
+                <PhotoCameraIcon />
+              </IconButton>
+            </Tooltip>
+            
+            {/* Add a button to toggle between direct camera and relay */}
+            {!isLocalhost && (
+              <Tooltip title={useCameraRelay ? "Use direct camera access" : "Use camera relay"}>
+                <IconButton
+                  color={useCameraRelay ? "primary" : "default"}
+                  onClick={handleToggleCameraRelay}
+                  sx={{ 
+                    bgcolor: 'rgba(0, 0, 0, 0.5)',
+                    '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.7)' }
+                  }}
+                >
+                  {useCameraRelay ? <SyncIcon /> : <SyncDisabledIcon />}
+                </IconButton>
+              </Tooltip>
+            )}
+          </Box>
+          
+          {/* Camera status indicator */}
+          {!cameraActive && (
+            <Box sx={{ 
+              position: 'absolute', 
+              top: '50%', 
+              left: '50%', 
+              transform: 'translate(-50%, -50%)',
+              textAlign: 'center'
+            }}>
+              <Typography variant="body1" color="white">
+                Camera is initializing...
+              </Typography>
+            </Box>
+          )}
+        </Box>
+      )}
+    </Box>
+  ), [
+    videoContainerRef, useCameraRelay, cameraActive, handleRelayFrame, 
+    canvasRef, videoRef, captureImage, isLocalhost, handleToggleCameraRelay
+  ]);
+
+  // Memoize the detection panel to prevent unnecessary re-renders
+  const renderDetectionPanel = useMemo(() => (
+    <Paper 
+      elevation={2} 
+      sx={{ 
+        p: 2, 
+        height: '100%', 
+        minHeight: 300,
+        display: 'flex',
+        flexDirection: 'column'
+      }}
+    >
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+        <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0 }}>
+          <SmartToyIcon fontSize="small" color="primary" />
+          Detected Objects
+        </Typography>
+        
+        <FormControlLabel
+          control={
+            <Switch 
+              size="small"
+              checked={soundEnabled}
+              onChange={handleToggleSound}
+              icon={<VolumeOffIcon fontSize="small" />}
+              checkedIcon={<VolumeUpIcon fontSize="small" />}
+            />
+          }
+          label={
+            <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center' }}>
+              {soundEnabled ? "Sound On" : "Sound Off"}
+            </Typography>
+          }
+          sx={{ m: 0 }}
+        />
+      </Box>
+      
+      {detections.length > 0 ? (
+        <Box sx={{ mt: 2, flex: 1, overflowY: 'auto' }}>
+          <Stack spacing={1}>
+            {peopleDetected > 0 && (
+              <Chip
+                label={`People detected: ${peopleDetected}`}
+                color="primary"
+                sx={{ justifyContent: 'flex-start', fontWeight: 'bold' }}
+              />
+            )}
+            {otherObjectsDetected.map((detection, index) => (
+              <Chip
+                key={index}
+                label={`${detection.class}`}
+                color="primary"
+                variant="outlined"
+                sx={{ justifyContent: 'flex-start' }}
+              />
+            ))}
+          </Stack>
+        </Box>
+      ) : (
+        <Box 
+          sx={{ 
+            display: 'flex', 
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flex: 1
+          }}
+        >
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 2, textAlign: 'center' }}>
+            {cameraActive && isDetecting 
+              ? "No objects detected yet" 
+              : "Camera is starting automatically..."}
+          </Typography>
+        </Box>
+      )}
+    </Paper>
+  ), [
+    soundEnabled, handleToggleSound, detections, peopleDetected, 
+    otherObjectsDetected, cameraActive, isDetecting
+  ]);
 
   return (
     <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
@@ -156,7 +480,6 @@ const CameraView = () => {
                     color="inherit" 
                     size="small"
                     onClick={() => {
-                      // Create a localhost URL with the same path
                       const currentPath = window.location.pathname;
                       const currentSearch = window.location.search;
                       window.location.href = `http://localhost:5173${currentPath}${currentSearch}`;
@@ -179,7 +502,6 @@ const CameraView = () => {
                         size="small" 
                         color="primary"
                         onClick={() => {
-                          // Replace current URL with localhost equivalent
                           const currentPath = window.location.pathname;
                           const currentSearch = window.location.search;
                           window.location.href = `http://localhost:5173${currentPath}${currentSearch}`;
@@ -195,7 +517,6 @@ const CameraView = () => {
                         size="small" 
                         color="primary"
                         onClick={() => {
-                          // Open the HTTPS setup instructions
                           window.open('/https-setup-instructions.html', '_blank');
                         }}
                         sx={{ textTransform: 'none', p: 0, minWidth: 'auto' }}
@@ -209,7 +530,6 @@ const CameraView = () => {
                         size="small" 
                         color="primary"
                         onClick={() => {
-                          // Toggle camera relay
                           setUseCameraRelay(true);
                         }}
                         sx={{ textTransform: 'none', p: 0, minWidth: 'auto' }}
@@ -227,7 +547,7 @@ const CameraView = () => {
             </MuiAlert>
           )}
 
-          {/* Camera Selection */}
+          {/* Camera Selection - only show when we have multiple cameras */}
           {availableCameras.length > 1 && (
             <Box sx={{ mb: 3 }}>
               <FormControl fullWidth variant="outlined" size="small">
@@ -260,339 +580,18 @@ const CameraView = () => {
             </Box>
           )}
 
-          {isModelLoading ? (
-            <Box 
-              sx={{ 
-                display: 'flex', 
-                flexDirection: 'column', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                p: 4
-              }}
-            >
-              <CircularProgress size={60} thickness={4} variant="determinate" value={modelLoadingProgress} />
-              <Typography variant="h6" sx={{ mt: 2 }}>
-                Loading YOLOv7 model: {modelLoadingProgress}%
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                This may take a few moments depending on your internet connection
-              </Typography>
-            </Box>
-          ) : (
+          {/* Loading Indicator */}
+          {isModelLoading && renderLoading}
+
+          {/* Camera and Detection Display */}
+          {!isModelLoading && (
             <Grid container spacing={3}>
               <Grid item xs={12} md={8}>
-                <Box sx={{ position: 'relative', mb: 3 }}>
-                  {/* Use CameraRelay when needed, otherwise use the regular camera view */}
-                  {useCameraRelay ? (
-                    <CameraRelay
-                      active={cameraActive}
-                      width={640}
-                      height={480}
-                      cameraId={selectedCameraId}
-                      onFrame={handleRelayFrame}
-                      onError={(message) => {
-                        console.error("CameraRelay error:", message);
-                        setError(message);
-                      }}
-                    />
-                  ) : (
-                    <Box
-                      ref={videoContainerRef}
-                      sx={{
-                        position: 'relative',
-                        width: '100%',
-                        height: 0,
-                        paddingBottom: '75%', // 4:3 aspect ratio
-                        backgroundColor: 'black',
-                        borderRadius: 1,
-                        overflow: 'hidden'
-                      }}
-                    >
-                      <video
-                        ref={videoRef}
-                        autoPlay
-                        playsInline
-                        muted
-                        style={{
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'cover'
-                        }}
-                      />
-                      <canvas
-                        ref={canvasRef}
-                        style={{
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'cover',
-                          display: 'none' // Hidden by default, used for capturing frames
-                        }}
-                      />
-                      
-                      {/* Overlay for detected objects */}
-                      {detections.length > 0 && (
-                        <Box
-                          sx={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            width: '100%',
-                            height: '100%',
-                            pointerEvents: 'none'
-                          }}
-                        >
-                          {detections.map((detection, index) => (
-                            detection.class !== 'person' && (
-                              <Box
-                                key={index}
-                                sx={{
-                                  position: 'absolute',
-                                  left: `${detection.bbox[0] * 100}%`,
-                                  top: `${detection.bbox[1] * 100}%`,
-                                  width: `${detection.bbox[2] * 100}%`,
-                                  height: `${detection.bbox[3] * 100}%`,
-                                  border: `2px solid ${theme.palette.primary.main}`,
-                                  borderRadius: '4px',
-                                  boxSizing: 'border-box',
-                                  '&::after': {
-                                    content: `"${detection.class} ${Math.round(detection.confidence * 100)}%"`,
-                                    position: 'absolute',
-                                    top: '-24px',
-                                    left: '0',
-                                    backgroundColor: theme.palette.primary.main,
-                                    color: theme.palette.primary.contrastText,
-                                    padding: '2px 6px',
-                                    borderRadius: '4px',
-                                    fontSize: '12px',
-                                    whiteSpace: 'nowrap'
-                                  }
-                                }}
-                              />
-                            )
-                          ))}
-                        </Box>
-                      )}
-                      
-                      {/* Camera controls */}
-                      <Box sx={{ 
-                        position: 'absolute', 
-                        bottom: 16, 
-                        right: 16, 
-                        display: 'flex', 
-                        gap: 1,
-                        zIndex: 2
-                      }}>
-                        <Tooltip title={soundEnabled ? "Mute notifications" : "Enable notifications"}>
-                          <IconButton
-                            color={soundEnabled ? "primary" : "default"}
-                            onClick={handleToggleSound}
-                            sx={{ 
-                              bgcolor: 'rgba(0, 0, 0, 0.5)',
-                              '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.7)' }
-                            }}
-                          >
-                            {soundEnabled ? <VolumeUpIcon /> : <VolumeOffIcon />}
-                          </IconButton>
-                        </Tooltip>
-                        
-                        <Tooltip title="Capture image">
-                          <span>
-                            <IconButton
-                              color="primary"
-                              onClick={captureImage}
-                              disabled={!cameraActive}
-                              sx={{ 
-                                bgcolor: 'rgba(0, 0, 0, 0.5)',
-                                '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.7)' }
-                              }}
-                            >
-                              <PhotoCameraIcon />
-                            </IconButton>
-                          </span>
-                        </Tooltip>
-                        
-                        <Tooltip title={cameraActive ? "Stop camera" : "Start camera"}>
-                          <IconButton
-                            color={cameraActive ? "error" : "primary"}
-                            onClick={toggleCamera}
-                            sx={{ 
-                              bgcolor: 'rgba(0, 0, 0, 0.5)',
-                              '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.7)' }
-                            }}
-                          >
-                            {cameraActive ? <VideocamOffIcon /> : <VideocamIcon />}
-                          </IconButton>
-                        </Tooltip>
-                        
-                        {/* Add a button to toggle between direct camera and relay */}
-                        {!isLocalhost && (
-                          <Tooltip title={useCameraRelay ? "Use direct camera access" : "Use camera relay"}>
-                            <IconButton
-                              color={useCameraRelay ? "primary" : "default"}
-                              onClick={() => {
-                                // Stop the camera before switching modes
-                                if (cameraActive) {
-                                  toggleCamera();
-                                  setTimeout(() => {
-                                    setUseCameraRelay(!useCameraRelay);
-                                    toggleCamera();
-                                  }, 500);
-                                } else {
-                                  setUseCameraRelay(!useCameraRelay);
-                                }
-                              }}
-                              sx={{ 
-                                bgcolor: 'rgba(0, 0, 0, 0.5)',
-                                '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.7)' }
-                              }}
-                            >
-                              {useCameraRelay ? <SyncIcon /> : <SyncDisabledIcon />}
-                            </IconButton>
-                          </Tooltip>
-                        )}
-                      </Box>
-                      
-                      {/* Camera status indicator */}
-                      {!cameraActive && (
-                        <Box sx={{ 
-                          position: 'absolute', 
-                          top: '50%', 
-                          left: '50%', 
-                          transform: 'translate(-50%, -50%)',
-                          textAlign: 'center'
-                        }}>
-                          <Typography variant="body1" color="white">
-                            Camera is off
-                          </Typography>
-                        </Box>
-                      )}
-                    </Box>
-                  )}
-                </Box>
-                
-                <Stack 
-                  direction="row" 
-                  spacing={2} 
-                  sx={{ mt: 2 }}
-                  justifyContent="center"
-                >
-                  <Button
-                    variant="contained"
-                    color={cameraActive ? "error" : "primary"}
-                    onClick={cameraActive ? stopCamera : startCamera}
-                    startIcon={<VideocamIcon />}
-                    disabled={isModelLoading}
-                  >
-                    {cameraActive ? "Stop Camera" : "Start Camera"}
-                  </Button>
-                  
-                  {error && error.includes('camera') && (
-                    <Button
-                      variant="outlined"
-                      color="secondary"
-                      onClick={useMockCamera}
-                      startIcon={<VideoLibraryIcon />}
-                      disabled={isModelLoading || cameraActive}
-                    >
-                      Use Mock Camera
-                    </Button>
-                  )}
-                  
-                  <Button
-                    variant="contained"
-                    color={isDetecting ? "error" : "secondary"}
-                    onClick={toggleDetection}
-                    startIcon={<SmartToyIcon />}
-                    disabled={isModelLoading || !cameraActive}
-                  >
-                    {isDetecting ? "Stop Detection" : "Start Detection"}
-                  </Button>
-                </Stack>
+                {renderCameraFeed}
               </Grid>
               
               <Grid item xs={12} md={4}>
-                <Paper 
-                  elevation={2} 
-                  sx={{ 
-                    p: 2, 
-                    height: '100%', 
-                    minHeight: 300,
-                    display: 'flex',
-                    flexDirection: 'column'
-                  }}
-                >
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                    <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0 }}>
-                      <SmartToyIcon fontSize="small" color="primary" />
-                      Detected Objects
-                    </Typography>
-                    
-                    <FormControlLabel
-                      control={
-                        <Switch 
-                          size="small"
-                          checked={soundEnabled}
-                          onChange={handleToggleSound}
-                          icon={<VolumeOffIcon fontSize="small" />}
-                          checkedIcon={<VolumeUpIcon fontSize="small" />}
-                        />
-                      }
-                      label={
-                        <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center' }}>
-                          {soundEnabled ? "Sound On" : "Sound Off"}
-                        </Typography>
-                      }
-                      sx={{ m: 0 }}
-                    />
-                  </Box>
-                  
-                  {detections.length > 0 ? (
-                    <Box sx={{ mt: 2, flex: 1, overflowY: 'auto' }}>
-                      <Stack spacing={1}>
-                        {detections.filter(detection => detection.class === 'person').length > 0 && (
-                          <Chip
-                            label={`People detected: ${detections.filter(detection => detection.class === 'person').length}`}
-                            color="primary"
-                            sx={{ justifyContent: 'flex-start', fontWeight: 'bold' }}
-                          />
-                        )}
-                        {detections.map((detection, index) => (
-                          detection.class !== 'person' && (
-                            <Chip
-                              key={index}
-                              label={`${detection.class}`}
-                              color="primary"
-                              variant="outlined"
-                              sx={{ justifyContent: 'flex-start' }}
-                            />
-                          )
-                        ))}
-                      </Stack>
-                    </Box>
-                  ) : (
-                    <Box 
-                      sx={{ 
-                        display: 'flex', 
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flex: 1
-                      }}
-                    >
-                      <Typography variant="body2" color="text.secondary" sx={{ mt: 2, textAlign: 'center' }}>
-                        {cameraActive && isDetecting 
-                          ? "No objects detected yet" 
-                          : "Start camera and detection to see objects"}
-                      </Typography>
-                    </Box>
-                  )}
-                </Paper>
+                {renderDetectionPanel}
               </Grid>
             </Grid>
           )}
@@ -614,9 +613,21 @@ const CameraView = () => {
           variant="filled"
           elevation={6}
         >
-          Person Detected!
+          Person Detected! Image being captured.
         </MuiAlert>
       </Snackbar>
+      
+      {/* Add information about automatic background detection */}
+      <Alert severity="success" sx={{ mb: 3 }}>
+        <AlertTitle>Automatic Camera and Detection Active</AlertTitle>
+        The camera feed and YOLOv7 object detection start automatically when you open this page. The system will:
+        <ul style={{ marginTop: '8px', paddingLeft: '20px' }}>
+          <li>Activate your camera and start detecting objects immediately</li>
+          <li>Detect people and objects continuously</li>
+          <li>Automatically capture images when people are detected</li>
+          <li>Log all detections for later review</li>
+        </ul>
+      </Alert>
       
       {/* Add information about camera relay when it's being used */}
       {useCameraRelay && (
@@ -642,4 +653,4 @@ const CameraView = () => {
   );
 };
 
-export default CameraView;
+export default React.memo(CameraView);

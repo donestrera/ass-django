@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 
 class ImageUploadView(APIView):
     parser_classes = [MultiPartParser, FormParser]
+    permission_classes = []  # Allow unauthenticated access
 
     def post(self, request, *args, **kwargs):
         try:
@@ -323,7 +324,6 @@ def control_pir(request):
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
 def person_detected(request):
     """Handle person detection from YOLOv7 and trigger camera capture"""
     try:
@@ -417,7 +417,6 @@ def person_detected(request):
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
 def captured_images(request):
     """Get a list of captured images"""
     try:
@@ -525,7 +524,6 @@ def captured_images(request):
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
 def motion_history(request):
     """Get motion detection history"""
     try:
@@ -579,20 +577,54 @@ def delete_captured_image(request, filename):
                 'error': f'Not an image file: {filename}'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Delete the file
-        os.remove(file_path)
-        logger.info(f"Successfully deleted image: {filename}")
+        # Check if we have permissions to delete the file
+        if not os.access(file_path, os.W_OK):
+            logger.error(f"No permission to delete file: {file_path}")
+            # Try to change permissions
+            try:
+                os.chmod(file_path, 0o666)
+                logger.info(f"Changed permissions for file: {file_path}")
+            except Exception as perm_err:
+                logger.error(f"Failed to change permissions: {perm_err}")
+                return Response({
+                    'error': f"Permission denied: {str(perm_err)}"
+                }, status=status.HTTP_403_FORBIDDEN)
         
-        return Response({
-            'success': True,
-            'message': f'Successfully deleted image: {filename}'
-        }, status=status.HTTP_200_OK)
+        # Delete the file
+        try:
+            os.remove(file_path)
+            logger.info(f"Successfully deleted image: {filename}")
+            
+            # Check for and delete metadata file if it exists
+            metadata_file = os.path.splitext(file_path)[0] + "_metadata.json"
+            if os.path.exists(metadata_file):
+                try:
+                    os.remove(metadata_file)
+                    logger.info(f"Also deleted metadata file: {os.path.basename(metadata_file)}")
+                except Exception as meta_err:
+                    logger.warning(f"Could not delete metadata file: {meta_err}")
+            
+            # Return a proper JSON response
+            return JsonResponse({
+                'success': True,
+                'message': f'Successfully deleted image: {filename}'
+            }, status=status.HTTP_200_OK)
+        except PermissionError as pe:
+            logger.error(f"Permission error deleting {filename}: {pe}")
+            return JsonResponse({
+                'error': f'Permission denied when deleting file: {str(pe)}'
+            }, status=status.HTTP_403_FORBIDDEN)
+        except Exception as del_err:
+            logger.error(f"Error during file deletion: {del_err}")
+            return JsonResponse({
+                'error': f'Failed to delete file: {str(del_err)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
     except Exception as e:
         logger.error(f"Error deleting image {filename}: {e}")
         import traceback
         logger.error(traceback.format_exc())
-        return Response({
+        return JsonResponse({
             'error': str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -605,7 +637,7 @@ def delete_multiple_images(request):
         filenames = request.data.get('filenames', [])
         
         if not filenames:
-            return Response({
+            return JsonResponse({
                 'error': 'No filenames provided'
             }, status=status.HTTP_400_BAD_REQUEST)
         
@@ -624,9 +656,41 @@ def delete_multiple_images(request):
             # Check if file exists and is an image
             if os.path.exists(file_path) and filename.lower().endswith(('.jpg', '.jpeg', '.png')):
                 try:
+                    # Check if we have permissions to delete the file
+                    if not os.access(file_path, os.W_OK):
+                        logger.warning(f"No permission to delete file: {file_path}")
+                        # Try to change permissions
+                        try:
+                            os.chmod(file_path, 0o666)
+                            logger.info(f"Changed permissions for file: {file_path}")
+                        except Exception as perm_err:
+                            logger.error(f"Failed to change permissions: {perm_err}")
+                            results['failed'].append({
+                                'filename': filename,
+                                'error': f'Permission denied: {str(perm_err)}'
+                            })
+                            continue
+
+                    # Try to delete the file
                     os.remove(file_path)
+                    
+                    # Check for and delete metadata file if it exists
+                    metadata_file = os.path.splitext(file_path)[0] + "_metadata.json"
+                    if os.path.exists(metadata_file):
+                        try:
+                            os.remove(metadata_file)
+                            logger.info(f"Also deleted metadata file: {os.path.basename(metadata_file)}")
+                        except Exception as meta_err:
+                            logger.warning(f"Could not delete metadata file: {meta_err}")
+                    
                     results['success'].append(filename)
                     logger.info(f"Successfully deleted image: {filename}")
+                except PermissionError as pe:
+                    results['failed'].append({
+                        'filename': filename,
+                        'error': f'Permission denied: {str(pe)}'
+                    })
+                    logger.error(f"Permission error deleting {filename}: {pe}")
                 except Exception as e:
                     results['failed'].append({
                         'filename': filename,
@@ -640,16 +704,17 @@ def delete_multiple_images(request):
                 })
                 logger.error(f"File does not exist or is not an image: {filename}")
         
-        return Response({
+        return JsonResponse({
             'results': results,
             'success_count': len(results['success']),
-            'failed_count': len(results['failed'])
+            'failed_count': len(results['failed']),
+            'details': results['failed'] if results['failed'] else None
         }, status=status.HTTP_200_OK)
         
     except Exception as e:
         logger.error(f"Error deleting multiple images: {e}")
         import traceback
         logger.error(traceback.format_exc())
-        return Response({
+        return JsonResponse({
             'error': str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR) 

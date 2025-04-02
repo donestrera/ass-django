@@ -1,0 +1,61 @@
+2025-04-02 11:21:18,133 - yolo_detector - INFO - Loading YOLOv7 model from /Users/dondon/Code/ass-django/yolov7/yolov7-tiny.pt
+2025-04-02 11:21:18,134 - yolo_detector - INFO - Using device: cpu
+2025-04-02 11:21:35,064 - yolo_detector - ERROR - Error loading YOLOv7 model: No module named 'pandas'
+2025-04-02 11:21:35,079 - yolo_detector - ERROR - Traceback (most recent call last):
+  File "/Users/dondon/Code/ass-django/yolov7/yolo_detector.py", line 55, in __init__
+    self.model = torch.hub.load('WongKinYiu/yolov7', 'custom', weights_path, source='github')
+  File "/Users/dondon/Library/Python/3.9/lib/python/site-packages/torch/hub.py", line 647, in load
+    model = _load_local(repo_or_dir, model, *args, **kwargs)
+  File "/Users/dondon/Library/Python/3.9/lib/python/site-packages/torch/hub.py", line 673, in _load_local
+    hub_module = _import_module(MODULE_HUBCONF, hubconf_path)
+  File "/Users/dondon/Library/Python/3.9/lib/python/site-packages/torch/hub.py", line 115, in _import_module
+    spec.loader.exec_module(module)
+  File "<frozen importlib._bootstrap_external>", line 850, in exec_module
+  File "<frozen importlib._bootstrap>", line 228, in _call_with_frames_removed
+  File "/Users/dondon/.cache/torch/hub/WongKinYiu_yolov7_main/hubconf.py", line 12, in <module>
+    from models.yolo import Model
+  File "/Users/dondon/.cache/torch/hub/WongKinYiu_yolov7_main/models/yolo.py", line 9, in <module>
+    from models.common import *
+  File "/Users/dondon/.cache/torch/hub/WongKinYiu_yolov7_main/models/common.py", line 6, in <module>
+    import pandas as pd
+ModuleNotFoundError: No module named 'pandas'
+
+2025-04-02 11:21:35,080 - yolo_detector - ERROR - Error loading detector: No module named 'pandas'
+2025-04-02 11:22:01,598 - yolo_detector - INFO - Loading YOLOv7 model from /Users/dondon/Code/ass-django/yolov7/yolov7-tiny.pt
+2025-04-02 11:22:01,598 - yolo_detector - INFO - Using device: cpu
+2025-04-02 11:22:10,291 - yolo_detector - ERROR - Error loading YOLOv7 model: No module named 'yaml'
+2025-04-02 11:22:10,314 - yolo_detector - ERROR - Traceback (most recent call last):
+  File "/Users/dondon/Code/ass-django/yolov7/yolo_detector.py", line 55, in __init__
+    self.model = torch.hub.load('WongKinYiu/yolov7', 'custom', weights_path, source='github')
+  File "/Users/dondon/Library/Python/3.9/lib/python/site-packages/torch/hub.py", line 647, in load
+    model = _load_local(repo_or_dir, model, *args, **kwargs)
+  File "/Users/dondon/Library/Python/3.9/lib/python/site-packages/torch/hub.py", line 673, in _load_local
+    hub_module = _import_module(MODULE_HUBCONF, hubconf_path)
+  File "/Users/dondon/Library/Python/3.9/lib/python/site-packages/torch/hub.py", line 115, in _import_module
+    spec.loader.exec_module(module)
+  File "<frozen importlib._bootstrap_external>", line 850, in exec_module
+  File "<frozen importlib._bootstrap>", line 228, in _call_with_frames_removed
+  File "/Users/dondon/.cache/torch/hub/WongKinYiu_yolov7_main/hubconf.py", line 12, in <module>
+    from models.yolo import Model
+  File "/Users/dondon/.cache/torch/hub/WongKinYiu_yolov7_main/models/yolo.py", line 9, in <module>
+    from models.common import *
+  File "/Users/dondon/.cache/torch/hub/WongKinYiu_yolov7_main/models/common.py", line 15, in <module>
+    from utils.datasets import letterbox
+  File "/Users/dondon/.cache/torch/hub/WongKinYiu_yolov7_main/utils/datasets.py", line 29, in <module>
+    from utils.general import check_requirements, xyxy2xywh, xywh2xyxy, xywhn2xyxy, xyn2xy, segment2box, segments2boxes, \
+  File "/Users/dondon/.cache/torch/hub/WongKinYiu_yolov7_main/utils/general.py", line 19, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+
+2025-04-02 11:22:10,315 - yolo_detector - ERROR - Error loading detector: No module named 'yaml'
+2025-04-02 11:23:27,214 - yolo_detector - INFO - Converting /Users/dondon/Code/ass-django/yolov7/yolov7-tiny.pt to ONNX format
+2025-04-02 11:23:29,297 - yolo_detector - ERROR - Error converting model to ONNX: Command '['/Library/Developer/CommandLineTools/usr/bin/python3', '-c', "\nimport torch\nimport torch.nn as nn\nimport sys\n\n# Load model\nmodel = torch.load('/Users/dondon/Code/ass-django/yolov7/yolov7-tiny.pt', map_location='cpu')\nmodel = model['model'] if 'model' in model else model  # Extract model from checkpoint\nmodel = model.float().eval()\n\n# Export to ONNX\ndummy_input = torch.randn(1, 3, 640, 640)\ntorch.onnx.export(\n    model, \n    dummy_input, \n    '/Users/dondon/Code/ass-django/yolov7/yolov7-tiny.onnx', \n    verbose=False,\n    opset_version=12,\n    input_names=['images'],\n    output_names=['output']\n)\nprint(f'Model exported to /Users/dondon/Code/ass-django/yolov7/yolov7-tiny.onnx')\n                "]' returned non-zero exit status 1.
+2025-04-02 11:23:29,299 - yolo_detector - ERROR - Traceback (most recent call last):
+  File "/Users/dondon/Code/ass-django/yolov7/yolo_detector.py", line 147, in convert_pt_to_onnx
+    subprocess.check_call(cmd)
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/subprocess.py", line 373, in check_call
+    raise CalledProcessError(retcode, cmd)
+subprocess.CalledProcessError: Command '['/Library/Developer/CommandLineTools/usr/bin/python3', '-c', "\nimport torch\nimport torch.nn as nn\nimport sys\n\n# Load model\nmodel = torch.load('/Users/dondon/Code/ass-django/yolov7/yolov7-tiny.pt', map_location='cpu')\nmodel = model['model'] if 'model' in model else model  # Extract model from checkpoint\nmodel = model.float().eval()\n\n# Export to ONNX\ndummy_input = torch.randn(1, 3, 640, 640)\ntorch.onnx.export(\n    model, \n    dummy_input, \n    '/Users/dondon/Code/ass-django/yolov7/yolov7-tiny.onnx', \n    verbose=False,\n    opset_version=12,\n    input_names=['images'],\n    output_names=['output']\n)\nprint(f'Model exported to /Users/dondon/Code/ass-django/yolov7/yolov7-tiny.onnx')\n                "]' returned non-zero exit status 1.
+
+2025-04-02 11:23:29,299 - yolo_detector - ERROR - Error converting PT to ONNX: Command '['/Library/Developer/CommandLineTools/usr/bin/python3', '-c', "\nimport torch\nimport torch.nn as nn\nimport sys\n\n# Load model\nmodel = torch.load('/Users/dondon/Code/ass-django/yolov7/yolov7-tiny.pt', map_location='cpu')\nmodel = model['model'] if 'model' in model else model  # Extract model from checkpoint\nmodel = model.float().eval()\n\n# Export to ONNX\ndummy_input = torch.randn(1, 3, 640, 640)\ntorch.onnx.export(\n    model, \n    dummy_input, \n    '/Users/dondon/Code/ass-django/yolov7/yolov7-tiny.onnx', \n    verbose=False,\n    opset_version=12,\n    input_names=['images'],\n    output_names=['output']\n)\nprint(f'Model exported to /Users/dondon/Code/ass-django/yolov7/yolov7-tiny.onnx')\n                "]' returned non-zero exit status 1.
+2025-04-02 11:23:29,299 - yolo_detector - INFO - Falling back to HOG detector
