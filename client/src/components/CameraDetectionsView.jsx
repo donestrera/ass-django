@@ -96,7 +96,28 @@ const CameraDetectionsView = () => {
             // Check if images array exists and is not empty
             if (data.images && data.images.length > 0) {
               console.log(`Found ${data.images.length} images`);
-              setCapturedImages(data.images);
+              
+              // Add debugging for timestamps in the first few images
+              data.images.slice(0, 3).forEach((img, index) => {
+                console.log(`Image ${index + 1} details:`, {
+                  filename: img.filename,
+                  timestamp: img.timestamp,
+                  parsed_date: getBestDate(img).toISOString(),
+                  file_date: extractDateFromFilename(img.filename)?.toISOString() || 'No date from filename'
+                });
+              });
+              
+              // Process the images to ensure dates are consistent
+              const processedImages = data.images.map(img => {
+                // Try to get date from filename for each image and store it
+                const fileDate = extractDateFromFilename(img.filename);
+                if (fileDate) {
+                  img._extracted_date = fileDate.toISOString();
+                }
+                return img;
+              });
+              
+              setCapturedImages(processedImages);
             } else {
               console.log('No images found or empty images array');
               setCapturedImages([]);
@@ -135,7 +156,28 @@ const CameraDetectionsView = () => {
           // Check if images array exists and is not empty
           if (data.images && data.images.length > 0) {
             console.log(`Found ${data.images.length} images from direct API`);
-            setCapturedImages(data.images);
+            
+            // Add debugging for timestamps in the first few images
+            data.images.slice(0, 3).forEach((img, index) => {
+              console.log(`Direct API Image ${index + 1} details:`, {
+                filename: img.filename,
+                timestamp: img.timestamp,
+                parsed_date: getBestDate(img).toISOString(),
+                file_date: extractDateFromFilename(img.filename)?.toISOString() || 'No date from filename'
+              });
+            });
+            
+            // Process the images to ensure dates are consistent
+            const processedImages = data.images.map(img => {
+              // Try to get date from filename for each image and store it
+              const fileDate = extractDateFromFilename(img.filename);
+              if (fileDate) {
+                img._extracted_date = fileDate.toISOString();
+              }
+              return img;
+            });
+            
+            setCapturedImages(processedImages);
           } else {
             console.log('No images found or empty images array from direct API');
             setCapturedImages([]);
@@ -237,29 +279,107 @@ const CameraDetectionsView = () => {
       setDeleteLoading(true);
       console.log(`Attempting to delete image: ${selectedImage.filename}`);
       
+      // First try the direct API to avoid proxy issues
+      let apiUrl = `http://localhost:8000/api/delete-image/${selectedImage.filename}/`;
+      console.log(`Using direct API URL: ${apiUrl}`);
+      
+      try {
+        const response = await fetch(apiUrl, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          credentials: 'include'
+        });
+        
+        console.log(`Delete response status from direct API: ${response.status}`);
+        
+        // Get response text first
+        const responseText = await response.text();
+        console.log('Raw response text from direct API:', responseText);
+        
+        // Try to parse as JSON
+        let result;
+        try {
+          // Only try to parse if the response starts with a JSON character ({ or [)
+          if (responseText.trim().startsWith('{') || responseText.trim().startsWith('[')) {
+            result = JSON.parse(responseText);
+            
+            // If we got a valid response, proceed with the rest of the function
+            console.log('Parsed delete result from direct API:', result);
+            
+            if (response.ok) {
+              // Remove the deleted image from the state
+              setCapturedImages(capturedImages.filter(img => img.filename !== selectedImage.filename));
+              
+              // Show success message
+              setSnackbar({
+                open: true,
+                message: `Image "${selectedImage.filename}" deleted successfully`,
+                severity: 'success'
+              });
+              
+              // Close dialogs
+              setDeleteDialogOpen(false);
+              setSelectedImage(null);
+              
+              // If we deleted the last image on the current page, go to the previous page
+              if (currentImages.length === 1 && page > 1) {
+                setPage(page - 1);
+              }
+            } else {
+              throw new Error(result?.error || 'Server error, please try again.');
+            }
+            
+            return; // Exit early since we processed the direct API successfully
+          } else {
+            console.error('Response from direct API is not JSON:', responseText.substring(0, 100));
+            // Continue to try the proxy if direct API failed
+          }
+        } catch (parseError) {
+          console.error('Error parsing JSON response from direct API:', parseError);
+          // Continue to try the proxy if direct API failed
+        }
+      } catch (directApiError) {
+        console.error('Error with direct API call:', directApiError);
+        // Continue to try the proxy if direct API failed
+      }
+      
+      // Fall back to proxy call
+      console.log('Falling back to proxy API call');
       const response = await fetch(`/api/delete-image/${selectedImage.filename}/`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         }
       });
       
-      console.log(`Delete response status: ${response.status}`);
+      console.log(`Delete response status from proxy: ${response.status}`);
       
       // Get response text first
       const responseText = await response.text();
-      console.log('Raw response text:', responseText);
+      console.log('Raw response text from proxy:', responseText);
       
       // Try to parse as JSON
       let result;
       try {
-        result = JSON.parse(responseText);
+        // Only try to parse if the response starts with a JSON character ({ or [)
+        if (responseText.trim().startsWith('{') || responseText.trim().startsWith('[')) {
+          result = JSON.parse(responseText);
+        } else {
+          console.error('Response from proxy is not JSON:', responseText.substring(0, 100));
+          throw new Error('Server returned non-JSON response');
+        }
       } catch (parseError) {
-        console.error('Error parsing JSON response:', parseError);
-        throw new Error(`Server returned invalid JSON: ${responseText.substring(0, 100)}`);
+        console.error('Error parsing JSON response from proxy:', parseError);
+        throw new Error(`Server returned invalid JSON response`);
       }
       
-      console.log('Parsed delete result:', result);
+      console.log('Parsed delete result from proxy:', result);
       
       if (response.ok) {
         // Remove the deleted image from the state
@@ -281,7 +401,7 @@ const CameraDetectionsView = () => {
           setPage(page - 1);
         }
       } else {
-        console.error('Failed to delete image:', result);
+        console.error('Failed to delete image from proxy:', result);
         
         // Show detailed error message
         setSnackbar({
@@ -315,31 +435,119 @@ const CameraDetectionsView = () => {
       setDeleteLoading(true);
       console.log(`Attempting to delete ${selectedImages.length} images`);
       
+      // First try the direct API to avoid proxy issues
+      let apiUrl = 'http://localhost:8000/api/delete-multiple-images/';
+      console.log(`Using direct API URL: ${apiUrl}`);
+      
+      try {
+        const response = await fetch(apiUrl, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          credentials: 'include',
+          body: JSON.stringify({ filenames: selectedImages })
+        });
+        
+        console.log(`Delete multiple response status from direct API: ${response.status}`);
+        
+        // Get response text first
+        const responseText = await response.text();
+        console.log('Raw multiple delete response text from direct API:', responseText);
+        
+        // Try to parse as JSON
+        let result;
+        try {
+          // Only try to parse if the response starts with a JSON character ({ or [)
+          if (responseText.trim().startsWith('{') || responseText.trim().startsWith('[')) {
+            result = JSON.parse(responseText);
+            
+            // If we got a valid response, proceed with the rest of the function
+            console.log('Parsed multiple delete result from direct API:', result);
+            
+            if (response.ok) {
+              // Remove the deleted images from the state
+              setCapturedImages(capturedImages.filter(img => !selectedImages.includes(img.filename)));
+              
+              // Show success message with details of any failures
+              if (result.failed_count > 0) {
+                setSnackbar({
+                  open: true,
+                  message: `Deleted ${result.success_count} images, but ${result.failed_count} failed. Check console for details.`,
+                  severity: 'warning'
+                });
+                console.warn('Some images failed to delete:', result.details);
+              } else {
+                setSnackbar({
+                  open: true,
+                  message: `Successfully deleted ${result.success_count} images`,
+                  severity: 'success'
+                });
+              }
+              
+              // Close dialogs and reset selection
+              setDeleteMultipleDialogOpen(false);
+              setSelectedImages([]);
+              setSelectionMode(false);
+              
+              // If we deleted all images on the current page, go to the previous page
+              if (selectedImages.length >= currentImages.length && page > 1) {
+                setPage(page - 1);
+              }
+              
+              return; // Exit early since we processed the direct API successfully
+            } else {
+              throw new Error(result?.error || 'Server error, please try again.');
+            }
+          } else {
+            console.error('Response from direct API is not JSON:', responseText.substring(0, 100));
+            // Continue to try the proxy if direct API failed
+          }
+        } catch (parseError) {
+          console.error('Error parsing JSON response from direct API:', parseError);
+          // Continue to try the proxy if direct API failed
+        }
+      } catch (directApiError) {
+        console.error('Error with direct API call:', directApiError);
+        // Continue to try the proxy if direct API failed
+      }
+      
+      // Fall back to proxy call
+      console.log('Falling back to proxy API call for multiple delete');
       const response = await fetch('/api/delete-multiple-images/', {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
         body: JSON.stringify({ filenames: selectedImages })
       });
       
-      console.log(`Delete multiple response status: ${response.status}`);
+      console.log(`Delete multiple response status from proxy: ${response.status}`);
       
       // Get response text first
       const responseText = await response.text();
-      console.log('Raw multiple delete response text:', responseText);
+      console.log('Raw multiple delete response text from proxy:', responseText);
       
       // Try to parse as JSON
       let result;
       try {
-        result = JSON.parse(responseText);
+        // Only try to parse if the response starts with a JSON character ({ or [)
+        if (responseText.trim().startsWith('{') || responseText.trim().startsWith('[')) {
+          result = JSON.parse(responseText);
+        } else {
+          console.error('Response from proxy is not JSON:', responseText.substring(0, 100));
+          throw new Error('Server returned non-JSON response');
+        }
       } catch (parseError) {
-        console.error('Error parsing JSON response for multiple delete:', parseError);
-        throw new Error(`Server returned invalid JSON: ${responseText.substring(0, 100)}`);
+        console.error('Error parsing JSON response for multiple delete from proxy:', parseError);
+        throw new Error(`Server returned invalid JSON response`);
       }
       
-      console.log('Parsed multiple delete result:', result);
+      console.log('Parsed multiple delete result from proxy:', result);
       
       if (response.ok) {
         // Remove the deleted images from the state
@@ -371,7 +579,7 @@ const CameraDetectionsView = () => {
           setPage(page - 1);
         }
       } else {
-        console.error('Failed to delete multiple images:', result);
+        console.error('Failed to delete multiple images from proxy:', result);
         
         setSnackbar({
           open: true,
@@ -401,6 +609,259 @@ const CameraDetectionsView = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
+  // Extract date from filename using multiple pattern matching strategies
+  const extractDateFromFilename = (filename) => {
+    if (!filename) return null;
+    
+    try {
+      // Most common pattern: YYYYMMDD_HHMMSS anywhere in the filename
+      // Matches: person_detected_20230402_145321.jpg, motion_pir_20230402_145321.jpg, etc.
+      const standardPattern = /(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})/;
+      const standardMatch = filename.match(standardPattern);
+      
+      if (standardMatch) {
+        const [_, year, month, day, hour, min, sec] = standardMatch;
+        console.log(`Matched standard pattern in ${filename}: ${year}-${month}-${day} ${hour}:${min}:${sec}`);
+        
+        // Ensure we're in the correct timezone by using UTC and then getting local date
+        const date = new Date(Date.UTC(
+          parseInt(year, 10), 
+          parseInt(month, 10) - 1, // Month is 0-indexed in JS Date
+          parseInt(day, 10),
+          parseInt(hour, 10),
+          parseInt(min, 10),
+          parseInt(sec, 10)
+        ));
+        
+        // Convert UTC to local timezone
+        return new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+      }
+      
+      // More loose pattern with separators: YYYY-MM-DD or YYYY/MM/DD followed by time
+      const loosePattern = /(\d{4})[-/](\d{1,2})[-/](\d{1,2})[-_\s]?(\d{1,2})[:.h](\d{1,2})(?:[:.m](\d{1,2}))?/;
+      const looseMatch = filename.match(loosePattern);
+      
+      if (looseMatch) {
+        const [_, year, month, day, hour, min, sec = '00'] = looseMatch;
+        console.log(`Matched loose pattern in ${filename}: ${year}-${month}-${day} ${hour}:${min}:${sec}`);
+        
+        // Ensure we're in the correct timezone by using UTC and then getting local date
+        const date = new Date(Date.UTC(
+          parseInt(year, 10), 
+          parseInt(month, 10) - 1, // Month is 0-indexed in JS Date
+          parseInt(day, 10),
+          parseInt(hour, 10),
+          parseInt(min, 10),
+          parseInt(sec, 10)
+        ));
+        
+        // Convert UTC to local timezone
+        return new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+      }
+      
+      // ISO-like date pattern: match anything that looks like an ISO date/time
+      const isoPattern = /(\d{4})-(\d{2})-(\d{2})[T\s](\d{2}):(\d{2}):(\d{2})/;
+      const isoMatch = filename.match(isoPattern);
+      
+      if (isoMatch) {
+        const [_, year, month, day, hour, min, sec] = isoMatch;
+        console.log(`Matched ISO pattern in ${filename}: ${year}-${month}-${day} ${hour}:${min}:${sec}`);
+        
+        // ISO pattern is already in standard format so we can just construct the date directly
+        const date = new Date(`${year}-${month}-${day}T${hour}:${min}:${sec}`);
+        return date;
+      }
+      
+      // Additional pattern for test files: test_capture_YYYYMMDD_HHMMSS.jpg
+      const testPattern = /test_capture_(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})/;
+      const testMatch = filename.match(testPattern);
+      
+      if (testMatch) {
+        const [_, year, month, day, hour, min, sec] = testMatch;
+        console.log(`Matched test pattern in ${filename}: ${year}-${month}-${day} ${hour}:${min}:${sec}`);
+        
+        // Ensure we're in the correct timezone by using UTC and then getting local date
+        const date = new Date(Date.UTC(
+          parseInt(year, 10), 
+          parseInt(month, 10) - 1, // Month is 0-indexed in JS Date
+          parseInt(day, 10),
+          parseInt(hour, 10),
+          parseInt(min, 10),
+          parseInt(sec, 10)
+        ));
+        
+        // Convert UTC to local timezone
+        return new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+      }
+    } catch (error) {
+      console.error('Error extracting date from filename:', error, filename);
+    }
+    
+    // Return null if no pattern matched or if there was an error
+    return null;
+  };
+  
+  // Helper function to get the best available date from an image object
+  const getBestDate = (image) => {
+    if (!image) return new Date();
+    
+    // First try using the cached extracted date if available
+    if (image._extracted_date) {
+      try {
+        const cachedDate = new Date(image._extracted_date);
+        if (!isNaN(cachedDate.getTime())) {
+          return cachedDate;
+        }
+      } catch (error) {
+        console.warn('Error using cached extracted date:', error);
+      }
+    }
+    
+    // Try extracting date from the filename again if needed
+    let fileDate;
+    
+    // If image is a motion_pir or person_detected file, we know exactly how to extract the date
+    if (image.filename.includes('motion_pir_') || image.filename.includes('person_detected_')) {
+      // These filenames have a consistent format: prefix_YYYYMMDD_HHMMSS.jpg
+      const datePart = image.filename.match(/(\d{8})_(\d{6})/);
+      if (datePart) {
+        const [_, dateStr, timeStr] = datePart;
+        const year = dateStr.substring(0, 4);
+        const month = dateStr.substring(4, 6);
+        const day = dateStr.substring(6, 8);
+        const hour = timeStr.substring(0, 2);
+        const min = timeStr.substring(2, 4);
+        const sec = timeStr.substring(4, 6);
+        
+        fileDate = new Date(`${year}-${month}-${day}T${hour}:${min}:${sec}`);
+        console.log(`Extracted specific date from ${image.filename}: ${fileDate.toISOString()}`);
+      }
+    } else {
+      // Use the general extraction function for other file types
+      fileDate = extractDateFromFilename(image.filename);
+    }
+    
+    if (fileDate && !isNaN(fileDate.getTime())) {
+      // Ensure the date is not wildly in the future or past (within 5 years)
+      const now = new Date();
+      const fiveYearsAgo = new Date();
+      fiveYearsAgo.setFullYear(now.getFullYear() - 5);
+      const fiveYearsFuture = new Date();
+      fiveYearsFuture.setFullYear(now.getFullYear() + 5);
+      
+      if (fileDate >= fiveYearsAgo && fileDate <= fiveYearsFuture) {
+        return fileDate;
+      } else {
+        console.warn(`Date from filename is outside reasonable range: ${fileDate.toISOString()}`);
+      }
+    }
+    
+    // If file date doesn't exist or is invalid, try metadata timestamp
+    const metadataDate = parseTimestamp(image.timestamp);
+    if (metadataDate && !isNaN(metadataDate.getTime())) {
+      return metadataDate;
+    }
+    
+    // As a last resort, try to extract timestamp from creation_time if available
+    if (image.creation_time) {
+      const creationDate = parseTimestamp(image.creation_time);
+      if (creationDate && !isNaN(creationDate.getTime())) {
+        return creationDate;
+      }
+    }
+    
+    // If all else fails, use the current date but log a warning
+    console.warn(`Could not determine valid date for image: ${image.filename}`);
+    return new Date();
+  };
+
+  // Helper function to parse timestamp properly
+  const parseTimestamp = (timestamp) => {
+    if (!timestamp) {
+      return null;
+    }
+    
+    try {
+      // Handle various timestamp formats
+      if (typeof timestamp === 'string') {
+        // Match number-only strings that might be milliseconds
+        if (/^\d+$/.test(timestamp)) {
+          const milliseconds = parseInt(timestamp, 10);
+          // Check if it's seconds (10 digits or less) or milliseconds (13 digits typically)
+          if (milliseconds < 10000000000) { // seconds
+            return new Date(milliseconds * 1000);
+          } else { // milliseconds
+            return new Date(milliseconds);
+          }
+        }
+        
+        // Handle YYYY-MM-DD HH:MM:SS format (space separator)
+        if (timestamp.includes(' ') && !timestamp.includes('T')) {
+          const isoFormat = timestamp.replace(' ', 'T');
+          const date = new Date(isoFormat);
+          if (!isNaN(date.getTime())) {
+            return date;
+          }
+        }
+        
+        // Handle ISO format directly (with T separator)
+        if (timestamp.includes('T')) {
+          const date = new Date(timestamp);
+          if (!isNaN(date.getTime())) {
+            return date;
+          }
+        }
+        
+        // Try to handle MM/DD/YYYY or DD/MM/YYYY format
+        if (timestamp.includes('/')) {
+          const parts = timestamp.split(/[/\s:]/);
+          if (parts.length >= 3) {
+            // Try both MM/DD/YYYY and DD/MM/YYYY formats
+            let date;
+            
+            // First try MM/DD/YYYY
+            date = new Date(parseInt(parts[2], 10), parseInt(parts[0], 10) - 1, parseInt(parts[1], 10));
+            if (!isNaN(date.getTime())) {
+              return date;
+            }
+            
+            // Then try DD/MM/YYYY
+            date = new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
+            if (!isNaN(date.getTime())) {
+              return date;
+            }
+          }
+        }
+        
+        // Last resort, try using the JS Date constructor directly
+        const date = new Date(timestamp);
+        if (!isNaN(date.getTime())) {
+          return date;
+        }
+      }
+      
+      // If it's a number (unix timestamp in seconds or milliseconds)
+      else if (typeof timestamp === 'number') {
+        // If it's in seconds (10 digits or less), convert to milliseconds
+        if (timestamp < 10000000000) {
+          return new Date(timestamp * 1000);
+        } else {
+          return new Date(timestamp);
+        }
+      }
+      
+      // If it's a Date object already
+      else if (timestamp instanceof Date) {
+        return timestamp;
+      }
+    } catch (error) {
+      console.error('Error parsing timestamp:', error, timestamp);
+    }
+    
+    // Return null if all parsing methods failed
+    return null;
+  };
+  
   // Helper functions for detection type display
   const getDetectionTypeLabel = (type) => {
     switch (type) {
@@ -549,13 +1010,20 @@ const CameraDetectionsView = () => {
                         cursor: selectionMode ? 'default' : 'pointer'
                       }}
                       onClick={selectionMode ? null : () => handleImageClick(image)}
+                      onError={(e) => {
+                        console.error(`Failed to load image: ${image.url}`);
+                        // Set a fallback image or placeholder
+                        e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2VlZSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMzAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiIGZpbGw9IiM5OTkiPkltYWdlIE5vdCBBdmFpbGFibGU8L3RleHQ+PC9zdmc+';
+                      }}
                     />
+                    {/* Detection Type Badge */}
                     <Box 
                       sx={{ 
                         position: 'absolute', 
                         top: 8, 
-                        right: 8,
+                        left: 8,
                         display: 'flex',
+                        flexDirection: 'column',
                         gap: 1
                       }}
                     >
@@ -570,6 +1038,18 @@ const CameraDetectionsView = () => {
                           '& .MuiChip-icon': { color: 'white' }
                         }}
                       />
+                    </Box>
+                    
+                    {/* Controls */}
+                    <Box 
+                      sx={{ 
+                        position: 'absolute', 
+                        top: 8, 
+                        right: 8,
+                        display: 'flex',
+                        gap: 1
+                      }}
+                    >
                       {!selectionMode && (
                         <Tooltip title="Delete image">
                           <IconButton
@@ -591,14 +1071,49 @@ const CameraDetectionsView = () => {
                         </Tooltip>
                       )}
                     </Box>
+                    
+                    {/* Filename Badge */}
+                    <Box 
+                      sx={{ 
+                        position: 'absolute', 
+                        bottom: 0, 
+                        left: 0,
+                        right: 0,
+                        padding: 1,
+                        background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 70%, rgba(0,0,0,0) 100%)',
+                        color: 'white',
+                        textAlign: 'left'
+                      }}
+                    >
+                      <Typography variant="caption" 
+                        sx={{ 
+                          fontSize: '0.7rem', 
+                          display: 'block',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        {image.filename}
+                      </Typography>
+                    </Box>
                   </Box>
                   <CardContent>
-                    <Typography variant="body2" color="text.secondary">
-                      {new Date(image.timestamp).toLocaleString()}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {formatDistanceToNow(new Date(image.timestamp), { addSuffix: true })}
-                    </Typography>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                          {getBestDate(image).toLocaleString()}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {formatDistanceToNow(getBestDate(image), { addSuffix: true })}
+                        </Typography>
+                      </Box>
+                      <Tooltip title={`File size: ${Math.round(image.size / 1024)} KB`}>
+                        <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+                          {Math.round(image.size / 1024)} KB
+                        </Typography>
+                      </Tooltip>
+                    </Box>
                   </CardContent>
                 </Card>
               </Grid>
@@ -651,36 +1166,108 @@ const CameraDetectionsView = () => {
                 sx={{ width: '100%' }}
               />
               <Box sx={{ p: 2 }}>
-                <Typography variant="h6" gutterBottom>
+                <Typography variant="h6" gutterBottom sx={{ wordBreak: 'break-all' }}>
                   {selectedImage.filename}
                 </Typography>
                 <Divider sx={{ my: 1 }} />
+                
                 <Grid container spacing={2} sx={{ mt: 1 }}>
-                  <Grid item xs={12} sm={6}>
-                    <Chip
-                      icon={getDetectionTypeIcon(selectedImage.detection_type)}
-                      label={getDetectionTypeLabel(selectedImage.detection_type)}
-                      color={getDetectionTypeColor(selectedImage.detection_type)}
-                      sx={{ mb: 1, mr: 1 }}
-                    />
-                    <Chip
-                      icon={<AccessTimeIcon />}
-                      label={formatDistanceToNow(new Date(selectedImage.timestamp), { addSuffix: true })}
-                      sx={{ mb: 1 }}
-                    />
+                  {/* Left Column - Image Information */}
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="subtitle2" gutterBottom>Image Details</Typography>
+                    
+                    <Box sx={{ mb: 2 }}>
+                      <Chip
+                        icon={getDetectionTypeIcon(selectedImage.detection_type)}
+                        label={getDetectionTypeLabel(selectedImage.detection_type)}
+                        color={getDetectionTypeColor(selectedImage.detection_type)}
+                        sx={{ mb: 1, mr: 1 }}
+                      />
+                      <Chip
+                        icon={<AccessTimeIcon />}
+                        label={formatDistanceToNow(getBestDate(selectedImage), { addSuffix: true })}
+                        sx={{ mb: 1 }}
+                      />
+                    </Box>
+                    
+                    <Box sx={{ 
+                      display: 'grid', 
+                      gridTemplateColumns: 'auto 1fr',
+                      gap: '8px 12px', 
+                      alignItems: 'center',
+                      '& > :nth-of-type(odd)': { 
+                        color: 'text.secondary',
+                        fontWeight: 'medium',
+                      },
+                    }}>
+                      <Typography variant="body2">Date:</Typography>
+                      <Typography variant="body2">
+                        {getBestDate(selectedImage).toLocaleDateString()}
+                      </Typography>
+                      
+                      <Typography variant="body2">Time:</Typography>
+                      <Typography variant="body2">
+                        {getBestDate(selectedImage).toLocaleTimeString()}
+                      </Typography>
+                      
+                      <Typography variant="body2">Size:</Typography>
+                      <Typography variant="body2">{Math.round(selectedImage.size / 1024)} KB</Typography>
+                      
+                      <Typography variant="body2">Path:</Typography>
+                      <Typography variant="body2" sx={{ 
+                        maxWidth: '100%', 
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                      }}>
+                        {selectedImage.url}
+                      </Typography>
+                    </Box>
                   </Grid>
-                  <Grid item xs={12} sm={6} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    <Button
-                      variant="contained"
-                      color="error"
-                      startIcon={<DeleteIcon />}
-                      onClick={() => {
-                        handleCloseDialog();
-                        openDeleteDialog(selectedImage);
-                      }}
-                    >
-                      Delete Image
-                    </Button>
+                  
+                  {/* Right Column - Detection Info */}
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="subtitle2" gutterBottom>Detection Information</Typography>
+                    
+                    <Box sx={{ 
+                      display: 'grid', 
+                      gridTemplateColumns: 'auto 1fr',
+                      gap: '8px 12px', 
+                      alignItems: 'center',
+                      '& > :nth-of-type(odd)': { 
+                        color: 'text.secondary',
+                        fontWeight: 'medium',
+                      },
+                    }}>
+                      <Typography variant="body2">Detection Type:</Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        {getDetectionTypeIcon(selectedImage.detection_type)}
+                        <Typography variant="body2" sx={{ ml: 1 }}>
+                          {getDetectionTypeLabel(selectedImage.detection_type)}
+                        </Typography>
+                      </Box>
+                      
+                      <Typography variant="body2">Filename Pattern:</Typography>
+                      <Typography variant="body2">
+                        {selectedImage.detection_type === 'yolo' ? 'person_detected_*' : 
+                         selectedImage.detection_type === 'pir' ? 'motion_pir_*' : 
+                         selectedImage.detection_type === 'test' ? 'test_capture_*' : 'unknown'}
+                      </Typography>
+                    </Box>
+                    
+                    <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+                      <Button
+                        variant="contained"
+                        color="error"
+                        startIcon={<DeleteIcon />}
+                        onClick={() => {
+                          handleCloseDialog();
+                          openDeleteDialog(selectedImage);
+                        }}
+                      >
+                        Delete Image
+                      </Button>
+                    </Box>
                   </Grid>
                 </Grid>
               </Box>

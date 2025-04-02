@@ -5573,3 +5573,482 @@ subprocess.CalledProcessError: Command '['/Library/Developer/CommandLineTools/us
 2025-04-02 12:42:30,864 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_124230.jpg
 2025-04-02 12:42:30,868 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_124230.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_124230.jpg'}
 2025-04-02 12:42:30,868 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 19:58:19,116 - person_capture - INFO - Saving detected person images to: /Users/dondon/Code/ass-django/captured_images
+2025-04-02 19:58:19,116 - person_capture - INFO - Initializing OpenCV HOG person detector
+2025-04-02 19:58:19,177 - person_capture - INFO - Initializing camera
+2025-04-02 19:58:22,690 - person_capture - INFO - Starting person detection with confidence threshold: 0.35
+2025-04-02 19:58:27,305 - person_capture - INFO - Person detected with confidence: 0.6663
+2025-04-02 19:58:27,312 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_195827.jpg
+2025-04-02 19:58:27,312 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_195827_metadata.json
+2025-04-02 19:58:27,313 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T19:58:27.307770', 'confidence': 0.6663071387447417}
+2025-04-02 19:58:27,873 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_115827.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 19:58:27,873 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 19:58:27,873 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_195827.jpg
+2025-04-02 19:58:27,877 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_195827.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_195827.jpg'}
+2025-04-02 19:58:27,877 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 19:58:31,333 - person_capture - INFO - Person detected with confidence: 0.9301
+2025-04-02 19:58:31,335 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_195831.jpg
+2025-04-02 19:58:31,335 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_195831_metadata.json
+2025-04-02 19:58:31,335 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T19:58:31.334464', 'confidence': 0.9300567258615047}
+2025-04-02 19:58:31,429 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_115831.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 19:58:31,429 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 19:58:31,429 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_195831.jpg
+2025-04-02 19:58:31,432 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_195831.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_195831.jpg'}
+2025-04-02 19:58:31,432 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 19:58:39,901 - person_capture - INFO - Person detected with confidence: 0.3652
+2025-04-02 19:58:39,903 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_195839.jpg
+2025-04-02 19:58:39,903 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_195839_metadata.json
+2025-04-02 19:58:39,903 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T19:58:39.901957', 'confidence': 0.3652352471835911}
+2025-04-02 19:58:40,360 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_115840.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 19:58:40,360 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 19:58:40,360 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_195839.jpg
+2025-04-02 19:58:40,364 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_195839.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_195839.jpg'}
+2025-04-02 19:58:40,364 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 19:58:50,126 - person_capture - INFO - Person detected with confidence: 0.5006
+2025-04-02 19:58:50,127 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_195850.jpg
+2025-04-02 19:58:50,127 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_195850_metadata.json
+2025-04-02 19:58:50,127 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T19:58:50.126484', 'confidence': 0.5005559627898037}
+2025-04-02 19:58:50,487 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_115850.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 19:58:50,487 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 19:58:50,487 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_195850.jpg
+2025-04-02 19:58:50,491 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_195850.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_195850.jpg'}
+2025-04-02 19:58:50,491 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 19:58:57,555 - person_capture - INFO - Person detected with confidence: 0.4510
+2025-04-02 19:58:57,556 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_195857.jpg
+2025-04-02 19:58:57,556 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_195857_metadata.json
+2025-04-02 19:58:57,556 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T19:58:57.555285', 'confidence': 0.4510373321827501}
+2025-04-02 19:58:57,652 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_115857.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 19:58:57,652 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 19:58:57,652 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_195857.jpg
+2025-04-02 19:58:57,656 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_195857.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_195857.jpg'}
+2025-04-02 19:58:57,656 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 20:13:18,831 - person_capture - INFO - Saving detected person images to: /Users/dondon/Code/ass-django/captured_images
+2025-04-02 20:13:18,831 - person_capture - INFO - Initializing OpenCV HOG person detector
+2025-04-02 20:13:18,895 - person_capture - INFO - Initializing camera
+2025-04-02 20:13:20,334 - person_capture - INFO - Starting person detection with confidence threshold: 0.35
+2025-04-02 20:21:23,317 - person_capture - INFO - Saving detected person images to: /Users/dondon/Code/ass-django/captured_images
+2025-04-02 20:21:23,317 - person_capture - INFO - Initializing OpenCV HOG person detector
+2025-04-02 20:21:23,373 - person_capture - INFO - Initializing camera
+2025-04-02 20:21:24,740 - person_capture - INFO - Starting person detection with confidence threshold: 0.35
+2025-04-02 20:22:32,825 - person_capture - INFO - Person detected with confidence: 0.4760
+2025-04-02 20:22:32,833 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_202232.jpg
+2025-04-02 20:22:32,834 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_202232_metadata.json
+2025-04-02 20:22:32,834 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T20:22:32.828155', 'confidence': 0.47597132495138794}
+2025-04-02 20:22:33,225 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_122233.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 20:22:33,225 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 20:22:33,225 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_202232.jpg
+2025-04-02 20:22:33,231 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_202232.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_202232.jpg'}
+2025-04-02 20:22:33,231 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 20:24:42,382 - person_capture - INFO - Saving detected person images to: /Users/dondon/Code/ass-django/captured_images
+2025-04-02 20:24:42,382 - person_capture - INFO - Initializing OpenCV HOG person detector
+2025-04-02 20:24:42,429 - person_capture - INFO - Initializing camera
+2025-04-02 20:24:43,802 - person_capture - INFO - Starting person detection with confidence threshold: 0.35
+2025-04-02 20:25:49,878 - person_capture - INFO - Person detected with confidence: 0.3727
+2025-04-02 20:25:49,883 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_202549.jpg
+2025-04-02 20:25:49,884 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_202549_metadata.json
+2025-04-02 20:25:49,884 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T20:25:49.880037', 'confidence': 0.37270821863785386}
+2025-04-02 20:25:50,498 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_122550.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 20:25:50,498 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 20:25:50,498 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_202549.jpg
+2025-04-02 20:25:50,509 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_202549.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_202549.jpg'}
+2025-04-02 20:25:50,509 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 20:27:02,916 - person_capture - INFO - Person detected with confidence: 0.3634
+2025-04-02 20:27:02,919 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_202702.jpg
+2025-04-02 20:27:02,919 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_202702_metadata.json
+2025-04-02 20:27:02,919 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T20:27:02.917740', 'confidence': 0.3633506391197443}
+2025-04-02 20:27:03,246 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_122703.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 20:27:03,247 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 20:27:03,247 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_202702.jpg
+2025-04-02 20:27:03,250 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_202702.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_202702.jpg'}
+2025-04-02 20:27:03,250 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 20:27:06,782 - person_capture - INFO - Person detected with confidence: 0.4878
+2025-04-02 20:27:06,783 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_202706.jpg
+2025-04-02 20:27:06,783 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_202706_metadata.json
+2025-04-02 20:27:06,783 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T20:27:06.782562', 'confidence': 0.4877911717630923}
+2025-04-02 20:27:06,874 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_122706.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 20:27:06,874 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 20:27:06,874 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_202706.jpg
+2025-04-02 20:27:06,877 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_202706.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_202706.jpg'}
+2025-04-02 20:27:06,877 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 20:27:09,646 - person_capture - INFO - Person detected with confidence: 0.7114
+2025-04-02 20:27:09,648 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_202709.jpg
+2025-04-02 20:27:09,648 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_202709_metadata.json
+2025-04-02 20:27:09,648 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T20:27:09.647188', 'confidence': 0.7114336332306266}
+2025-04-02 20:27:09,742 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_122709.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 20:27:09,742 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 20:27:09,742 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_202709.jpg
+2025-04-02 20:27:09,746 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_202709.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_202709.jpg'}
+2025-04-02 20:27:09,746 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 20:27:16,308 - person_capture - INFO - Person detected with confidence: 0.6863
+2025-04-02 20:27:16,309 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_202716.jpg
+2025-04-02 20:27:16,309 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_202716_metadata.json
+2025-04-02 20:27:16,309 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T20:27:16.308567', 'confidence': 0.6862918855622411}
+2025-04-02 20:27:16,402 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_122716.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 20:27:16,402 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 20:27:16,403 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_202716.jpg
+2025-04-02 20:27:16,406 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_202716.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_202716.jpg'}
+2025-04-02 20:27:16,406 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 20:30:12,266 - person_capture - INFO - Person detected with confidence: 0.6836
+2025-04-02 20:30:12,270 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_203012.jpg
+2025-04-02 20:30:12,270 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_203012_metadata.json
+2025-04-02 20:30:12,270 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T20:30:12.268130', 'confidence': 0.6835940652526915}
+2025-04-02 20:30:12,425 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_123012.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 20:30:12,426 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 20:30:12,426 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_203012.jpg
+2025-04-02 20:30:12,430 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_203012.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_203012.jpg'}
+2025-04-02 20:30:12,430 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 20:34:46,343 - person_capture - ERROR - Failed to read frame from camera
+2025-04-02 20:34:48,362 - person_capture - ERROR - Failed to read frame from camera
+2025-04-02 20:34:50,378 - person_capture - ERROR - Failed to read frame from camera
+2025-04-02 20:34:52,389 - person_capture - ERROR - Failed to read frame from camera
+2025-04-02 20:34:54,410 - person_capture - ERROR - Failed to read frame from camera
+2025-04-02 20:34:56,430 - person_capture - ERROR - Failed to read frame from camera
+2025-04-02 20:34:58,451 - person_capture - ERROR - Failed to read frame from camera
+2025-04-02 20:35:00,468 - person_capture - ERROR - Failed to read frame from camera
+2025-04-02 20:35:02,489 - person_capture - ERROR - Failed to read frame from camera
+2025-04-02 20:35:04,509 - person_capture - ERROR - Failed to read frame from camera
+2025-04-02 20:35:06,523 - person_capture - ERROR - Failed to read frame from camera
+2025-04-02 20:35:08,530 - person_capture - ERROR - Failed to read frame from camera
+2025-04-02 20:35:10,548 - person_capture - ERROR - Failed to read frame from camera
+2025-04-02 20:35:12,567 - person_capture - ERROR - Failed to read frame from camera
+2025-04-02 20:35:14,583 - person_capture - ERROR - Failed to read frame from camera
+2025-04-02 20:35:16,600 - person_capture - ERROR - Failed to read frame from camera
+2025-04-02 20:35:34,581 - person_capture - ERROR - Failed to read frame from camera
+2025-04-02 20:36:38,918 - person_capture - INFO - Person detected with confidence: 0.6450
+2025-04-02 20:36:38,920 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_203638.jpg
+2025-04-02 20:36:38,920 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_203638_metadata.json
+2025-04-02 20:36:38,921 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T20:36:38.919307', 'confidence': 0.6449602593202144}
+2025-04-02 20:36:39,282 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_123639.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 20:36:39,282 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 20:36:39,283 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_203638.jpg
+2025-04-02 20:36:39,286 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_203638.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_203638.jpg'}
+2025-04-02 20:36:39,286 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 20:37:28,932 - person_capture - INFO - Person detected with confidence: 0.5421
+2025-04-02 20:37:28,933 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_203728.jpg
+2025-04-02 20:37:28,933 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_203728_metadata.json
+2025-04-02 20:37:28,933 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T20:37:28.932520', 'confidence': 0.5420914392452687}
+2025-04-02 20:37:29,028 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_123729.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 20:37:29,028 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 20:37:29,029 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_203728.jpg
+2025-04-02 20:37:29,032 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_203728.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_203728.jpg'}
+2025-04-02 20:37:29,032 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 20:37:59,958 - person_capture - INFO - Saving detected person images to: /Users/dondon/Code/ass-django/captured_images
+2025-04-02 20:37:59,958 - person_capture - INFO - Initializing OpenCV HOG person detector
+2025-04-02 20:37:59,995 - person_capture - INFO - Initializing camera
+2025-04-02 20:38:01,344 - person_capture - INFO - Starting person detection with confidence threshold: 0.35
+2025-04-02 20:40:13,875 - person_capture - INFO - Saving detected person images to: /Users/dondon/Code/ass-django/captured_images
+2025-04-02 20:40:13,875 - person_capture - INFO - Initializing OpenCV HOG person detector
+2025-04-02 20:40:13,932 - person_capture - INFO - Initializing camera
+2025-04-02 20:40:15,305 - person_capture - INFO - Starting person detection with confidence threshold: 0.35
+2025-04-02 20:40:53,666 - person_capture - INFO - Person detected with confidence: 0.3906
+2025-04-02 20:40:53,668 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_204053.jpg
+2025-04-02 20:40:53,668 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_204053_metadata.json
+2025-04-02 20:40:53,668 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T20:40:53.666759', 'confidence': 0.39061581366695464}
+2025-04-02 20:40:53,764 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_124053.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 20:40:53,764 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 20:40:53,764 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_204053.jpg
+2025-04-02 20:40:53,767 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_204053.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_204053.jpg'}
+2025-04-02 20:40:53,768 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 20:41:54,504 - person_capture - INFO - Person detected with confidence: 0.4783
+2025-04-02 20:41:54,506 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_204154.jpg
+2025-04-02 20:41:54,507 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_204154_metadata.json
+2025-04-02 20:41:54,507 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T20:41:54.505823', 'confidence': 0.47831462882459164}
+2025-04-02 20:41:54,600 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_124154.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 20:41:54,600 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 20:41:54,600 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_204154.jpg
+2025-04-02 20:41:54,603 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_204154.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_204154.jpg'}
+2025-04-02 20:41:54,603 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 20:41:57,139 - person_capture - INFO - Person detected with confidence: 0.3816
+2025-04-02 20:41:57,141 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_204157.jpg
+2025-04-02 20:41:57,141 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_204157_metadata.json
+2025-04-02 20:41:57,141 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T20:41:57.139639', 'confidence': 0.3815669184550643}
+2025-04-02 20:41:57,233 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_124157.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 20:41:57,233 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 20:41:57,233 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_204157.jpg
+2025-04-02 20:41:57,237 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_204157.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_204157.jpg'}
+2025-04-02 20:41:57,237 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 20:42:25,759 - person_capture - INFO - Saving detected person images to: /Users/dondon/Code/ass-django/captured_images
+2025-04-02 20:42:25,759 - person_capture - INFO - Initializing OpenCV HOG person detector
+2025-04-02 20:42:25,796 - person_capture - INFO - Initializing camera
+2025-04-02 20:42:27,136 - person_capture - INFO - Starting person detection with confidence threshold: 0.35
+2025-04-02 20:42:40,414 - person_capture - INFO - Person detected with confidence: 0.3925
+2025-04-02 20:42:40,416 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_204240.jpg
+2025-04-02 20:42:40,416 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_204240_metadata.json
+2025-04-02 20:42:40,416 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T20:42:40.414499', 'confidence': 0.3925247979350388}
+2025-04-02 20:42:40,745 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_124240.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 20:42:40,745 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 20:42:40,745 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_204240.jpg
+2025-04-02 20:42:40,752 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_204240.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_204240.jpg'}
+2025-04-02 20:42:40,752 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 20:43:10,229 - person_capture - INFO - Person detected with confidence: 0.3577
+2025-04-02 20:43:10,231 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_204310.jpg
+2025-04-02 20:43:10,231 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_204310_metadata.json
+2025-04-02 20:43:10,231 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T20:43:10.230075', 'confidence': 0.3576634735800326}
+2025-04-02 20:43:10,523 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_124310.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 20:43:10,523 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 20:43:10,523 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_204310.jpg
+2025-04-02 20:43:10,526 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_204310.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_204310.jpg'}
+2025-04-02 20:43:10,526 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 20:43:25,188 - person_capture - INFO - Person detected with confidence: 0.3649
+2025-04-02 20:43:25,190 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_204325.jpg
+2025-04-02 20:43:25,191 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_204325_metadata.json
+2025-04-02 20:43:25,191 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T20:43:25.189741', 'confidence': 0.36491633486002684}
+2025-04-02 20:43:25,284 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_124325.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 20:43:25,285 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 20:43:25,285 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_204325.jpg
+2025-04-02 20:43:25,288 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_204325.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_204325.jpg'}
+2025-04-02 20:43:25,288 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 20:44:44,263 - person_capture - INFO - Saving detected person images to: /Users/dondon/Code/ass-django/captured_images
+2025-04-02 20:44:44,263 - person_capture - INFO - Initializing OpenCV HOG person detector
+2025-04-02 20:44:44,316 - person_capture - INFO - Initializing camera
+2025-04-02 20:44:45,655 - person_capture - INFO - Starting person detection with confidence threshold: 0.35
+2025-04-02 20:46:13,728 - person_capture - INFO - Person detected with confidence: 0.5243
+2025-04-02 20:46:13,733 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_204613.jpg
+2025-04-02 20:46:13,733 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_204613_metadata.json
+2025-04-02 20:46:13,733 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T20:46:13.730943', 'confidence': 0.5242568170651793}
+2025-04-02 20:46:14,150 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_124614.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 20:46:14,150 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 20:46:14,150 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_204613.jpg
+2025-04-02 20:46:14,155 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_204613.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_204613.jpg'}
+2025-04-02 20:46:14,155 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 20:46:36,841 - person_capture - INFO - Person detected with confidence: 0.4197
+2025-04-02 20:46:36,842 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_204636.jpg
+2025-04-02 20:46:36,842 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_204636_metadata.json
+2025-04-02 20:46:36,842 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T20:46:36.841361', 'confidence': 0.4196970262564719}
+2025-04-02 20:46:36,937 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_124636.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 20:46:36,937 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 20:46:36,938 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_204636.jpg
+2025-04-02 20:46:36,942 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_204636.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_204636.jpg'}
+2025-04-02 20:46:36,942 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 20:47:03,729 - person_capture - INFO - Person detected with confidence: 0.8123
+2025-04-02 20:47:03,732 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_204703.jpg
+2025-04-02 20:47:03,732 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_204703_metadata.json
+2025-04-02 20:47:03,732 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T20:47:03.730960', 'confidence': 0.8123363207560033}
+2025-04-02 20:47:04,059 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_124704.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 20:47:04,059 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 20:47:04,060 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_204703.jpg
+2025-04-02 20:47:04,063 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_204703.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_204703.jpg'}
+2025-04-02 20:47:04,063 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 20:47:06,293 - person_capture - INFO - Person detected with confidence: 0.3684
+2025-04-02 20:47:06,294 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_204706.jpg
+2025-04-02 20:47:06,294 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_204706_metadata.json
+2025-04-02 20:47:06,295 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T20:47:06.293731', 'confidence': 0.36841387394815683}
+2025-04-02 20:47:06,390 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_124706.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 20:47:06,391 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 20:47:06,391 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_204706.jpg
+2025-04-02 20:47:06,394 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_204706.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_204706.jpg'}
+2025-04-02 20:47:06,394 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 20:47:10,891 - person_capture - INFO - Person detected with confidence: 0.7974
+2025-04-02 20:47:10,892 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_204710.jpg
+2025-04-02 20:47:10,892 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_204710_metadata.json
+2025-04-02 20:47:10,892 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T20:47:10.891580', 'confidence': 0.7974453892093152}
+2025-04-02 20:47:10,989 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_124710.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 20:47:10,990 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 20:47:10,990 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_204710.jpg
+2025-04-02 20:47:10,993 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_204710.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_204710.jpg'}
+2025-04-02 20:47:10,993 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 20:47:18,886 - person_capture - INFO - Person detected with confidence: 0.4446
+2025-04-02 20:47:18,887 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_204718.jpg
+2025-04-02 20:47:18,888 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_204718_metadata.json
+2025-04-02 20:47:18,888 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T20:47:18.886639', 'confidence': 0.44460619357414544}
+2025-04-02 20:47:18,987 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_124718.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 20:47:18,987 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 20:47:18,987 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_204718.jpg
+2025-04-02 20:47:18,991 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_204718.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_204718.jpg'}
+2025-04-02 20:47:18,991 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 20:52:24,093 - person_capture - INFO - Saving detected person images to: /Users/dondon/Code/ass-django/captured_images
+2025-04-02 20:52:24,093 - person_capture - INFO - Initializing OpenCV HOG person detector
+2025-04-02 20:52:24,152 - person_capture - INFO - Initializing camera
+2025-04-02 20:52:25,530 - person_capture - INFO - Starting person detection with confidence threshold: 0.35
+2025-04-02 20:53:02,974 - person_capture - INFO - Person detected with confidence: 0.4514
+2025-04-02 20:53:02,978 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_205302.jpg
+2025-04-02 20:53:02,978 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_205302_metadata.json
+2025-04-02 20:53:02,978 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T20:53:02.975398', 'confidence': 0.45139339938759804}
+2025-04-02 20:53:03,460 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_125303.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 20:53:03,461 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 20:53:03,461 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_205302.jpg
+2025-04-02 20:53:03,468 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_205302.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_205302.jpg'}
+2025-04-02 20:53:03,468 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 20:53:07,824 - person_capture - INFO - Person detected with confidence: 0.5439
+2025-04-02 20:53:07,825 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_205307.jpg
+2025-04-02 20:53:07,826 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_205307_metadata.json
+2025-04-02 20:53:07,826 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T20:53:07.824620', 'confidence': 0.5438948571681976}
+2025-04-02 20:53:07,920 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_125307.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 20:53:07,920 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 20:53:07,920 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_205307.jpg
+2025-04-02 20:53:07,925 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_205307.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_205307.jpg'}
+2025-04-02 20:53:07,926 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 20:53:10,255 - person_capture - INFO - Person detected with confidence: 1.0364
+2025-04-02 20:53:10,256 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_205310.jpg
+2025-04-02 20:53:10,256 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_205310_metadata.json
+2025-04-02 20:53:10,256 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T20:53:10.255358', 'confidence': 1.0363680515438318}
+2025-04-02 20:53:10,518 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_125310.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 20:53:10,518 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 20:53:10,518 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_205310.jpg
+2025-04-02 20:53:10,521 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_205310.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_205310.jpg'}
+2025-04-02 20:53:10,521 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 20:53:12,273 - person_capture - INFO - Person detected with confidence: 0.4622
+2025-04-02 20:53:12,276 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_205312.jpg
+2025-04-02 20:53:12,277 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_205312_metadata.json
+2025-04-02 20:53:12,277 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T20:53:12.274158', 'confidence': 0.4622175556141883}
+2025-04-02 20:53:12,384 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_125312.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 20:53:12,384 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 20:53:12,384 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_205312.jpg
+2025-04-02 20:53:12,388 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_205312.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_205312.jpg'}
+2025-04-02 20:53:12,388 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 20:53:16,118 - person_capture - INFO - Person detected with confidence: 0.4020
+2025-04-02 20:53:16,119 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_205316.jpg
+2025-04-02 20:53:16,119 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_205316_metadata.json
+2025-04-02 20:53:16,119 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T20:53:16.118274', 'confidence': 0.4020053595304489}
+2025-04-02 20:53:16,383 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_125316.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 20:53:16,383 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 20:53:16,383 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_205316.jpg
+2025-04-02 20:53:16,387 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_205316.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_205316.jpg'}
+2025-04-02 20:53:16,387 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 20:53:19,149 - person_capture - INFO - Person detected with confidence: 1.0602
+2025-04-02 20:53:19,150 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_205319.jpg
+2025-04-02 20:53:19,150 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_205319_metadata.json
+2025-04-02 20:53:19,150 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T20:53:19.149301', 'confidence': 1.0602379894116893}
+2025-04-02 20:53:19,247 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_125319.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 20:53:19,247 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 20:53:19,247 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_205319.jpg
+2025-04-02 20:53:19,251 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_205319.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_205319.jpg'}
+2025-04-02 20:53:19,251 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 20:53:21,318 - person_capture - INFO - Person detected with confidence: 0.8560
+2025-04-02 20:53:21,320 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_205321.jpg
+2025-04-02 20:53:21,320 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_205321_metadata.json
+2025-04-02 20:53:21,320 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T20:53:21.318929', 'confidence': 0.8559550093486905}
+2025-04-02 20:53:21,411 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_125321.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 20:53:21,411 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 20:53:21,412 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_205321.jpg
+2025-04-02 20:53:21,415 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_205321.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_205321.jpg'}
+2025-04-02 20:53:21,415 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 20:53:39,374 - person_capture - INFO - Person detected with confidence: 0.3547
+2025-04-02 20:53:39,376 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_205339.jpg
+2025-04-02 20:53:39,376 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_205339_metadata.json
+2025-04-02 20:53:39,376 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T20:53:39.375565', 'confidence': 0.35473689693026245}
+2025-04-02 20:53:39,472 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_125339.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 20:53:39,472 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 20:53:39,473 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_205339.jpg
+2025-04-02 20:53:39,476 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_205339.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_205339.jpg'}
+2025-04-02 20:53:39,476 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 20:53:45,010 - person_capture - INFO - Person detected with confidence: 0.3594
+2025-04-02 20:53:45,012 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_205345.jpg
+2025-04-02 20:53:45,012 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_205345_metadata.json
+2025-04-02 20:53:45,012 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T20:53:45.011354', 'confidence': 0.35939668817445636}
+2025-04-02 20:53:45,112 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_125345.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 20:53:45,112 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 20:53:45,112 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_205345.jpg
+2025-04-02 20:53:45,116 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_205345.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_205345.jpg'}
+2025-04-02 20:53:45,116 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 20:53:51,604 - person_capture - INFO - Person detected with confidence: 0.5466
+2025-04-02 20:53:51,606 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_205351.jpg
+2025-04-02 20:53:51,606 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_205351_metadata.json
+2025-04-02 20:53:51,606 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T20:53:51.604996', 'confidence': 0.5466233866754919}
+2025-04-02 20:53:51,702 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_125351.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 20:53:51,702 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 20:53:51,703 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_205351.jpg
+2025-04-02 20:53:51,706 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_205351.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_205351.jpg'}
+2025-04-02 20:53:51,707 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 20:53:54,533 - person_capture - INFO - Person detected with confidence: 0.4466
+2025-04-02 20:53:54,534 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_205354.jpg
+2025-04-02 20:53:54,534 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_205354_metadata.json
+2025-04-02 20:53:54,534 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T20:53:54.533374', 'confidence': 0.44658302841708064}
+2025-04-02 20:53:54,633 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_125354.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 20:53:54,633 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 20:53:54,634 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_205354.jpg
+2025-04-02 20:53:54,637 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_205354.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_205354.jpg'}
+2025-04-02 20:53:54,637 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 20:57:45,096 - person_capture - INFO - Saving detected person images to: /Users/dondon/Code/ass-django/captured_images
+2025-04-02 20:57:45,096 - person_capture - INFO - Initializing OpenCV HOG person detector
+2025-04-02 20:57:45,140 - person_capture - INFO - Initializing camera
+2025-04-02 20:57:46,497 - person_capture - INFO - Starting person detection with confidence threshold: 0.35
+2025-04-02 20:59:16,277 - person_capture - INFO - Saving detected person images to: /Users/dondon/Code/ass-django/captured_images
+2025-04-02 20:59:16,277 - person_capture - INFO - Initializing OpenCV HOG person detector
+2025-04-02 20:59:16,332 - person_capture - INFO - Initializing camera
+2025-04-02 20:59:17,702 - person_capture - INFO - Starting person detection with confidence threshold: 0.35
+2025-04-02 21:01:47,614 - person_capture - INFO - Person detected with confidence: 0.4749
+2025-04-02 21:01:47,618 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_210147.jpg
+2025-04-02 21:01:47,618 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_210147_metadata.json
+2025-04-02 21:01:47,618 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T21:01:47.616704', 'confidence': 0.4748976337723434}
+2025-04-02 21:01:47,946 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_130147.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 21:01:47,946 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 21:01:47,946 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_210147.jpg
+2025-04-02 21:01:47,950 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_210147.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_210147.jpg'}
+2025-04-02 21:01:47,951 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 21:02:13,436 - person_capture - INFO - Person detected with confidence: 0.5037
+2025-04-02 21:02:13,438 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_210213.jpg
+2025-04-02 21:02:13,438 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_210213_metadata.json
+2025-04-02 21:02:13,438 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T21:02:13.437266', 'confidence': 0.5037474079290405}
+2025-04-02 21:02:13,533 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_130213.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 21:02:13,533 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 21:02:13,533 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_210213.jpg
+2025-04-02 21:02:13,537 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_210213.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_210213.jpg'}
+2025-04-02 21:02:13,537 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 21:02:18,067 - person_capture - INFO - Person detected with confidence: 0.3832
+2025-04-02 21:02:18,068 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_210218.jpg
+2025-04-02 21:02:18,069 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_210218_metadata.json
+2025-04-02 21:02:18,069 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T21:02:18.067827', 'confidence': 0.3831686445046216}
+2025-04-02 21:02:18,164 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_130218.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 21:02:18,164 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 21:02:18,164 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_210218.jpg
+2025-04-02 21:02:18,168 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_210218.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_210218.jpg'}
+2025-04-02 21:02:18,168 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 21:02:32,860 - person_capture - INFO - Person detected with confidence: 0.4320
+2025-04-02 21:02:32,863 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_210232.jpg
+2025-04-02 21:02:32,863 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_210232_metadata.json
+2025-04-02 21:02:32,863 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T21:02:32.861980', 'confidence': 0.43204391887411475}
+2025-04-02 21:02:32,956 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_130232.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 21:02:32,956 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 21:02:32,956 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_210232.jpg
+2025-04-02 21:02:32,960 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_210232.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_210232.jpg'}
+2025-04-02 21:02:32,960 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 21:03:28,934 - person_capture - INFO - Person detected with confidence: 0.9177
+2025-04-02 21:03:28,937 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_210328.jpg
+2025-04-02 21:03:28,937 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_210328_metadata.json
+2025-04-02 21:03:28,937 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T21:03:28.935678', 'confidence': 0.9176602279767394}
+2025-04-02 21:03:29,033 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_130329.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 21:03:29,033 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 21:03:29,033 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_210328.jpg
+2025-04-02 21:03:29,037 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_210328.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_210328.jpg'}
+2025-04-02 21:03:29,037 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 21:03:36,565 - person_capture - INFO - Person detected with confidence: 0.3713
+2025-04-02 21:03:36,567 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_210336.jpg
+2025-04-02 21:03:36,567 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_210336_metadata.json
+2025-04-02 21:03:36,567 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T21:03:36.566067', 'confidence': 0.37129653827287257}
+2025-04-02 21:03:36,661 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_130336.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 21:03:36,661 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 21:03:36,661 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_210336.jpg
+2025-04-02 21:03:36,665 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_210336.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_210336.jpg'}
+2025-04-02 21:03:36,665 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 21:03:43,495 - person_capture - INFO - Person detected with confidence: 0.5020
+2025-04-02 21:03:43,496 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_210343.jpg
+2025-04-02 21:03:43,497 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_210343_metadata.json
+2025-04-02 21:03:43,497 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T21:03:43.495368', 'confidence': 0.5020225322805345}
+2025-04-02 21:03:43,590 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_130343.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 21:03:43,591 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 21:03:43,591 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_210343.jpg
+2025-04-02 21:03:43,595 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_210343.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_210343.jpg'}
+2025-04-02 21:03:43,595 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 21:07:36,628 - person_capture - INFO - Saving detected person images to: /Users/dondon/Code/ass-django/captured_images
+2025-04-02 21:07:36,628 - person_capture - INFO - Initializing OpenCV HOG person detector
+2025-04-02 21:07:36,672 - person_capture - INFO - Initializing camera
+2025-04-02 21:07:38,046 - person_capture - INFO - Starting person detection with confidence threshold: 0.35
+2025-04-02 21:08:06,092 - person_capture - INFO - Person detected with confidence: 0.5370
+2025-04-02 21:08:06,096 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_210806.jpg
+2025-04-02 21:08:06,097 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_210806_metadata.json
+2025-04-02 21:08:06,097 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T21:08:06.093466', 'confidence': 0.5369954630732536}
+2025-04-02 21:08:06,578 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_130806.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 21:08:06,578 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 21:08:06,578 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_210806.jpg
+2025-04-02 21:08:06,583 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_210806.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_210806.jpg'}
+2025-04-02 21:08:06,583 - person_capture - INFO - Successfully uploaded image to Django API
+2025-04-02 21:09:52,708 - person_capture - INFO - Person detected with confidence: 0.4452
+2025-04-02 21:09:52,712 - person_capture - INFO - Saved detection image to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_210952.jpg
+2025-04-02 21:09:52,713 - person_capture - INFO - Saved detection metadata to /Users/dondon/Code/ass-django/captured_images/person_detected_20250402_210952_metadata.json
+2025-04-02 21:09:52,713 - person_capture - INFO - Notifying Django API about person detection: {'timestamp': '2025-04-02T21:09:52.710390', 'confidence': 0.44517703517340124}
+2025-04-02 21:09:53,129 - person_capture - INFO - Django API notified successfully: {'message': 'Person detection processed successfully', 'camera_capture_initiated': True, 'filename': 'person_detected_20250402_130953.jpg', 'save_directory': '/Users/dondon/Code/ass-django/server/media/captured_images'}
+2025-04-02 21:09:53,130 - person_capture - INFO - Successfully notified Django API about person detection
+2025-04-02 21:09:53,130 - person_capture - INFO - Uploading image to Django API: person_detected_20250402_210952.jpg
+2025-04-02 21:09:53,133 - person_capture - INFO - Image uploaded successfully: {'message': 'Image uploaded successfully', 'file_path': '/Users/dondon/Code/ass-django/server/media/captured_images/person_detected_20250402_210952.jpg', 'url': 'http://localhost:8000/media/captured_images/person_detected_20250402_210952.jpg'}
+2025-04-02 21:09:53,133 - person_capture - INFO - Successfully uploaded image to Django API

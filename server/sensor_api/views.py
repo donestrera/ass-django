@@ -566,40 +566,53 @@ def delete_captured_image(request, filename):
         # Check if file exists
         if not os.path.exists(file_path):
             logger.error(f"File does not exist: {file_path}")
-            return Response({
+            return JsonResponse({
                 'error': f'File does not exist: {filename}'
             }, status=status.HTTP_404_NOT_FOUND)
         
         # Check if file is an image
         if not filename.lower().endswith(('.jpg', '.jpeg', '.png')):
             logger.error(f"Not an image file: {filename}")
-            return Response({
+            return JsonResponse({
                 'error': f'Not an image file: {filename}'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Check if we have permissions to delete the file
-        if not os.access(file_path, os.W_OK):
-            logger.error(f"No permission to delete file: {file_path}")
-            # Try to change permissions
-            try:
-                os.chmod(file_path, 0o666)
-                logger.info(f"Changed permissions for file: {file_path}")
-            except Exception as perm_err:
-                logger.error(f"Failed to change permissions: {perm_err}")
-                return Response({
-                    'error': f"Permission denied: {str(perm_err)}"
-                }, status=status.HTTP_403_FORBIDDEN)
+        # Try more aggressive permission handling
+        try:
+            # First try to make file writable by everyone
+            os.chmod(file_path, 0o666)
+            logger.info(f"Changed permissions for file: {file_path}")
+            
+            # Handle metadata file permissions first
+            metadata_file = os.path.splitext(file_path)[0] + "_metadata.json"
+            if os.path.exists(metadata_file):
+                try:
+                    os.chmod(metadata_file, 0o666)
+                    logger.info(f"Changed permissions for metadata file: {metadata_file}")
+                except Exception as meta_perm_err:
+                    logger.warning(f"Failed to change metadata file permissions: {meta_perm_err}")
+        except Exception as perm_err:
+            logger.warning(f"Failed to change permissions: {perm_err}")
+            # Continue anyway - we'll try to delete even if chmod fails
         
         # Delete the file
         try:
-            os.remove(file_path)
+            # Use subprocess for more robust deletion
+            import subprocess
+            result = subprocess.run(['rm', '-f', file_path], capture_output=True, text=True)
+            
+            if result.returncode != 0:
+                logger.error(f"Command line deletion failed: {result.stderr}")
+                # Fall back to regular deletion
+                os.remove(file_path)
+                
             logger.info(f"Successfully deleted image: {filename}")
             
             # Check for and delete metadata file if it exists
             metadata_file = os.path.splitext(file_path)[0] + "_metadata.json"
             if os.path.exists(metadata_file):
                 try:
-                    os.remove(metadata_file)
+                    subprocess.run(['rm', '-f', metadata_file], capture_output=True, text=True)
                     logger.info(f"Also deleted metadata file: {os.path.basename(metadata_file)}")
                 except Exception as meta_err:
                     logger.warning(f"Could not delete metadata file: {meta_err}")
@@ -650,35 +663,46 @@ def delete_multiple_images(request):
             'failed': []
         }
         
+        # Import subprocess for more robust deletion
+        import subprocess
+        
         for filename in filenames:
             file_path = os.path.join(images_dir, filename)
             
             # Check if file exists and is an image
             if os.path.exists(file_path) and filename.lower().endswith(('.jpg', '.jpeg', '.png')):
                 try:
-                    # Check if we have permissions to delete the file
-                    if not os.access(file_path, os.W_OK):
-                        logger.warning(f"No permission to delete file: {file_path}")
-                        # Try to change permissions
-                        try:
-                            os.chmod(file_path, 0o666)
-                            logger.info(f"Changed permissions for file: {file_path}")
-                        except Exception as perm_err:
-                            logger.error(f"Failed to change permissions: {perm_err}")
-                            results['failed'].append({
-                                'filename': filename,
-                                'error': f'Permission denied: {str(perm_err)}'
-                            })
-                            continue
+                    # Try more aggressive permission handling
+                    try:
+                        # First try to make file writable by everyone
+                        os.chmod(file_path, 0o666)
+                        logger.info(f"Changed permissions for file: {file_path}")
+                        
+                        # Handle metadata file permissions first
+                        metadata_file = os.path.splitext(file_path)[0] + "_metadata.json"
+                        if os.path.exists(metadata_file):
+                            try:
+                                os.chmod(metadata_file, 0o666)
+                                logger.info(f"Changed permissions for metadata file: {metadata_file}")
+                            except Exception as meta_perm_err:
+                                logger.warning(f"Failed to change metadata file permissions: {meta_perm_err}")
+                    except Exception as perm_err:
+                        logger.warning(f"Failed to change permissions: {perm_err}")
+                        # Continue anyway - we'll try to delete even if chmod fails
 
-                    # Try to delete the file
-                    os.remove(file_path)
+                    # Try to delete the file using subprocess for more robust deletion
+                    result = subprocess.run(['rm', '-f', file_path], capture_output=True, text=True)
+                    
+                    if result.returncode != 0:
+                        logger.error(f"Command line deletion failed: {result.stderr}")
+                        # Fall back to regular deletion
+                        os.remove(file_path)
                     
                     # Check for and delete metadata file if it exists
                     metadata_file = os.path.splitext(file_path)[0] + "_metadata.json"
                     if os.path.exists(metadata_file):
                         try:
-                            os.remove(metadata_file)
+                            subprocess.run(['rm', '-f', metadata_file], capture_output=True, text=True)
                             logger.info(f"Also deleted metadata file: {os.path.basename(metadata_file)}")
                         except Exception as meta_err:
                             logger.warning(f"Could not delete metadata file: {meta_err}")

@@ -407,7 +407,13 @@ async def process_detection(frame, timestamp):
                 _, img_encoded = cv2.imencode('.jpg', vis_frame)
                 with open(filepath, 'wb') as f:
                     f.write(img_encoded.tobytes())
-                logger.info(f"Detection image saved to {filepath}")
+                
+                # Set file permissions to ensure it's writeable/deletable
+                try:
+                    os.chmod(filepath, 0o666)  # rw-rw-rw-
+                    logger.info(f"Detection image saved to {filepath} with permissions 666")
+                except Exception as perm_err:
+                    logger.error(f"Error setting file permissions: {perm_err}")
                 
                 # Save metadata about the detection
                 metadata_path = os.path.join(captured_images_dir, f"{os.path.splitext(filename)[0]}_metadata.json")
@@ -419,6 +425,12 @@ async def process_detection(frame, timestamp):
                         'personDetected': True,
                         'filename': filename
                     }, f, indent=2)
+                
+                # Set permissions on metadata file too
+                try:
+                    os.chmod(metadata_path, 0o666)  # rw-rw-rw-
+                except Exception as perm_err:
+                    logger.error(f"Error setting metadata file permissions: {perm_err}")
                 logger.info(f"Detection metadata saved to {metadata_path}")
                 
             except Exception as e:
