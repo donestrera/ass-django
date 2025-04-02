@@ -37,31 +37,41 @@ class SPAHandler(http.server.SimpleHTTPRequestHandler):
 class ReuseAddressServer(socketserver.TCPServer):
     allow_reuse_address = True
 
-# Get port from environment or use default
-port = int(os.environ.get('PORT', 9090))
-directory = os.environ.get('DIRECTORY', 'client/dist')
-
-print(f"Starting server on port {port}, serving from {directory}")
-
-# Make sure directory exists
-if not os.path.exists(directory):
-    print(f"Error: Directory {directory} does not exist")
-    sys.exit(1)
-
-# Change to the specified directory
-os.chdir(directory)
-print(f"Changed to directory: {os.getcwd()}")
-
-# Start the server
-try:
-    httpd = ReuseAddressServer(("", port), SPAHandler)
-    print(f"Server running at http://localhost:{port}")
-    httpd.serve_forever()
-except OSError as e:
-    if e.errno == 48:  # Address already in use
-        print(f"Error: Port {port} is already in use")
+def main():
+    # Get port from environment or use default
+    port = int(os.environ.get('PORT', 9090))
+    directory = os.environ.get('DIRECTORY', '')
+    
+    print(f"Starting server on port {port}, serving from {directory}")
+    
+    # Make sure directory exists
+    if not os.path.exists(directory):
+        print(f"Error: Directory {directory} does not exist")
         sys.exit(1)
-    else:
-        raise
-except KeyboardInterrupt:
-    print("Server stopped by user")
+    
+    # List directory contents to verify
+    print(f"Directory contents: {os.listdir(directory)}")
+    
+    # Change to the specified directory
+    os.chdir(directory)
+    print(f"Changed to directory: {os.getcwd()}")
+    
+    # Start the server
+    try:
+        httpd = ReuseAddressServer(("", port), SPAHandler)
+        print(f"Server running at http://localhost:{port}")
+        httpd.serve_forever()
+    except OSError as e:
+        if e.errno == 48:  # Address already in use
+            print(f"Error: Port {port} is already in use")
+            sys.exit(1)
+        else:
+            raise e
+    except KeyboardInterrupt:
+        print("Server stopped by user")
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+        sys.exit(1)
+
+if __name__ == "__main__":
+    main()

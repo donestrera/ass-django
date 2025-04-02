@@ -153,15 +153,32 @@ if [ "$FORCE_REBUILD" = true ] || [ ! -d "$BASE_DIR/client/dist" ]; then
         rm -rf "$BASE_DIR/client/dist"
     fi
     
-    # Build the application
-    cd "$BASE_DIR/client" && npm run build
+    # Find npm path
+    NPM_PATH=$(which npm)
+    if [ -z "$NPM_PATH" ]; then
+        echo "Error: npm not found. Please ensure npm is installed."
+        exit 1
+    fi
     
+    echo "Using npm at: $NPM_PATH"
+    
+    # Build the application
+    cd "$BASE_DIR/client" && "$NPM_PATH" run build
+    
+    # Verify build was successful
     if [[ ! -d "$BASE_DIR/client/dist" ]]; then
         echo "Error: Failed to build client application"
+        echo "Checking for dist directory..."
+        ls -la "$BASE_DIR/client"
         exit 1
     fi
     
     echo "Client application built successfully"
+    
+    # Verify build contents
+    echo "Verifying build contents..."
+    ls -la "$BASE_DIR/client/dist"
+    
     cd "$BASE_DIR"
 else
     echo "Using existing client build (set FORCE_REBUILD=true to rebuild)"
@@ -317,50 +334,114 @@ class SPAHandler(http.server.SimpleHTTPRequestHandler):
 class ReuseAddressServer(socketserver.TCPServer):
     allow_reuse_address = True
 
-# Get port from environment or use default
-port = int(os.environ.get('PORT', 9090))
-directory = os.environ.get('DIRECTORY', 'client/dist')
-
-print(f"Starting server on port {port}, serving from {directory}")
-
-# Make sure directory exists
-if not os.path.exists(directory):
-    print(f"Error: Directory {directory} does not exist")
-    sys.exit(1)
-
-# Change to the specified directory
-os.chdir(directory)
-print(f"Changed to directory: {os.getcwd()}")
-
-# Start the server
-try:
-    httpd = ReuseAddressServer(("", port), SPAHandler)
-    print(f"Server running at http://localhost:{port}")
-    httpd.serve_forever()
-except OSError as e:
-    if e.errno == 48:  # Address already in use
-        print(f"Error: Port {port} is already in use")
+def main():
+    # Get port from environment or use default
+    port = int(os.environ.get('PORT', 9090))
+    directory = os.environ.get('DIRECTORY', '')
+    
+    print(f"Starting server on port {port}, serving from {directory}")
+    
+    # Make sure directory exists
+    if not os.path.exists(directory):
+        print(f"Error: Directory {directory} does not exist")
         sys.exit(1)
-    else:
-        raise
-except KeyboardInterrupt:
-    print("Server stopped by user")
+    
+    # List directory contents to verify
+    print(f"Directory contents: {os.listdir(directory)}")
+    
+    # Change to the specified directory
+    os.chdir(directory)
+    print(f"Changed to directory: {os.getcwd()}")
+    
+    # Start the server
+    try:
+        httpd = ReuseAddressServer(("", port), SPAHandler)
+        print(f"Server running at http://localhost:{port}")
+        httpd.serve_forever()
+    except OSError as e:
+        if e.errno == 48:  # Address already in use
+            print(f"Error: Port {port} is already in use")
+            sys.exit(1)
+        else:
+            raise e
+    except KeyboardInterrupt:
+        print("Server stopped by user")
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+        sys.exit(1)
+
+if __name__ == "__main__":
+    main()
 EOL
 
 chmod +x spa_server.py
 
 # Start the frontend server
 echo "Starting frontend server on port $FRONTEND_PORT..."
-PORT=$FRONTEND_PORT DIRECTORY=client/dist python3 spa_server.py > "$LOG_DIR/frontend-yolo.log" 2>&1 &
+
+# Make sure the dist directory exists before trying to serve it
+if [ ! -d "$BASE_DIR/client/dist" ]; then
+    echo "Error: client/dist directory not found. Rebuilding..."
+    
+    # Find npm path
+    NPM_PATH=$(which npm)
+    echo "Using npm at: $NPM_PATH"
+    
+    # Build the application as a last resort
+    cd "$BASE_DIR/client" && "$NPM_PATH" run build
+    cd "$BASE_DIR"
+    
+    if [ ! -d "$BASE_DIR/client/dist" ]; then
+        echo "Fatal error: Still cannot find client/dist directory after rebuild attempt"
+        echo "Current directory contains:"
+        ls -la "$BASE_DIR/client"
+        exit 1
+    fi
+fi
+
+# Start the frontend directly using npm dev
+cd "$BASE_DIR/client"
+echo "Starting frontend directly using npm dev server..."
+
+# Clean up any existing processes
+echo "Cleaning up existing processes on port $FRONTEND_PORT..."
+lsof -ti :$FRONTEND_PORT | xargs kill -9 2>/dev/null || true
+sleep 2
+
+# Run the development server
+echo "Running npm dev server on port $FRONTEND_PORT..."
+PORT=$FRONTEND_PORT "$NPM_PATH" run dev -- --port $FRONTEND_PORT --host > "$LOG_DIR/frontend-yolo.log" 2>&1 &
 FRONTEND_PID=$!
 
-# Verify frontend server is running
-sleep 2
-if ! wait_for_service $FRONTEND_PORT "Frontend server" 10 1; then
-    echo "Error: Frontend server failed to start on port $FRONTEND_PORT"
-    cat "$LOG_DIR/frontend-yolo.log" | tail -20
-    exit 1
-fi
+# Wait for server to start
+echo "Waiting for frontend server to initialize..."
+sleep 5
+
+# Keep checking for availability
+for i in {1..10}; do
+    if curl -s "http://localhost:$FRONTEND_PORT" > /dev/null; then
+        echo "Frontend server is running on port $FRONTEND_PORT with PID $FRONTEND_PID"
+        break
+    fi
+    
+    if [ $i -eq 10 ]; then
+        echo "Error: Cannot connect to frontend server after 10 attempts"
+        echo "Checking logs:"
+        cat "$LOG_DIR/frontend-yolo.log"
+        
+        # Last resort - check if server is actually running but not responding to curl
+        if lsof -i :$FRONTEND_PORT > /dev/null 2>&1; then
+            echo "Note: A process is listening on port $FRONTEND_PORT but not responding to HTTP requests"
+            echo "Try accessing http://localhost:$FRONTEND_PORT directly in your browser"
+        else
+            echo "No process is listening on port $FRONTEND_PORT"
+            exit 1
+        fi
+    fi
+    
+    echo "  Waiting for server to be ready ($i/10)..."
+    sleep 2
+done
 echo "Frontend server running on port $FRONTEND_PORT"
 
 #-----------------------------------------------

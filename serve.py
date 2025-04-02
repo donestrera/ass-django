@@ -1,96 +1,98 @@
 #!/usr/bin/env python3
-import http.server
-import socketserver
+"""
+Simple development server launcher for React frontend.
+This script launches the npm dev server directly, which is more reliable than
+serving static files. It handles all the routing and hot reloading.
+"""
 import os
 import sys
-import socket
 import subprocess
 import time
+import signal
 
-# Kill any existing processes using port 9090
-try:
-    print("Checking for existing processes using port 9090...")
-    subprocess.run(["pkill", "-f", "http.server.*9090"], check=False)
-    subprocess.run(["pkill", "-f", "python.*serve.py"], check=False)
-    # Give it a moment to release the port
-    time.sleep(1)
-    print("Cleaned up existing processes")
-except Exception as e:
-    print(f"Warning: Error cleaning up processes: {e}")
+# Configuration
+PORT = int(os.environ.get("PORT", 9090))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+CLIENT_DIR = os.path.join(BASE_DIR, "client")
 
-class SPAHandler(http.server.SimpleHTTPRequestHandler):
-    def do_GET(self):
-        # Print request info for debugging
-        print(f"GET request for: {self.path}")
-        
-        # For SPA routes, always serve index.html
-        if self.path.startswith('/dashboard/') or self.path == '/dashboard':
-            print(f"SPA route detected: {self.path}, serving index.html")
-            self.path = '/index.html'
-        
-        # Check if file exists
-        file_path = self.translate_path(self.path)
-        if os.path.exists(file_path) and os.path.isfile(file_path):
-            print(f"File exists: {file_path}")
-            return http.server.SimpleHTTPRequestHandler.do_GET(self)
-        
-        # Default to index.html for non-existent paths (SPA routing)
-        print(f"File not found: {file_path}, serving index.html")
-        self.path = '/index.html'
-        return http.server.SimpleHTTPRequestHandler.do_GET(self)
-
-class ReuseAddressServer(socketserver.TCPServer):
-    allow_reuse_address = True
-    
-PORT = 9090
-HOST = "0.0.0.0"  # Listen on all interfaces
-DIRECTORY = "client/dist"
-
-# Make sure the directory exists
-if not os.path.exists(DIRECTORY):
-    print(f"Error: Directory {DIRECTORY} does not exist.")
-    print(f"Current working directory: {os.getcwd()}")
-    print("Please run this script from the project root directory.")
-    sys.exit(1)
-
-# Change to the specified directory
-os.chdir(DIRECTORY)
-print(f"Changed to directory: {os.getcwd()}")
-
-# Try to close any existing connections first
-try:
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    s.bind((HOST, PORT))
-    s.close()
-    print(f"Successfully verified port {PORT} is available")
-except Exception as e:
-    print(f"Warning: Could not verify port {PORT} is available: {e}")
-    # Try again with a delay
-    print("Waiting 5 seconds and trying again...")
-    time.sleep(5)
-
-# Create server with address reuse
-try:
-    Handler = SPAHandler
-    httpd = ReuseAddressServer((HOST, PORT), Handler)
-
-    print(f"Serving {DIRECTORY} at http://{HOST}:{PORT}")
-    print(f"You can access the server at http://localhost:{PORT}")
-    print(f"Press Ctrl+C to stop the server")
+def cleanup_processes():
+    """Kill any existing processes on the port"""
+    print(f"Cleaning up existing processes on port {PORT}...")
     try:
-        httpd.serve_forever()
-    except KeyboardInterrupt:
-        print("Server stopped by user")
-    finally:
-        httpd.server_close()
-        print("Server closed")
-except OSError as e:
-    if e.errno == 48:  # Address already in use
-        print("Error: Port 9090 is already in use.")
-        print("Try running these commands manually to free the port:")
-        print("  pkill -f 'http.server.*9090'")
-        print("  pkill -f 'python.*serve.py'")
+        # Find processes using the port
+        lsof_output = subprocess.check_output(
+            f"lsof -ti :{PORT}", shell=True
+        ).decode().strip()
+        
+        if lsof_output:
+            pids = lsof_output.split('\n')
+            print(f"Found processes: {pids}")
+            for pid in pids:
+                print(f"Killing process {pid}")
+                os.kill(int(pid), signal.SIGKILL)
+        
+        # Give it a moment to release the port
+        time.sleep(1)
+        print("Cleaned up existing processes")
+    except subprocess.CalledProcessError:
+        # No processes found
+        print("No processes found using the port")
+    except Exception as e:
+        print(f"Warning: Error cleaning up processes: {e}")
+
+def check_client_directory():
+    """Verify client directory exists"""
+    if not os.path.exists(CLIENT_DIR):
+        print(f"Error: Client directory not found at {CLIENT_DIR}")
         sys.exit(1)
-    else:
-        raise 
+    
+    print(f"Client directory found at {CLIENT_DIR}")
+
+def start_dev_server():
+    """Start the npm development server"""
+    try:
+        # Find npm
+        try:
+            npm_path = subprocess.check_output("which npm", shell=True).decode().strip()
+        except:
+            npm_path = "/opt/homebrew/bin/npm"
+        
+        print(f"Using npm at: {npm_path}")
+        
+        # Change to client directory
+        os.chdir(CLIENT_DIR)
+        
+        # Set the PORT environment variable
+        env = os.environ.copy()
+        env["PORT"] = str(PORT)
+        
+        # Run npm dev server
+        print(f"Starting development server on port {PORT}...")
+        process = subprocess.Popen(
+            [npm_path, "run", "dev", "--", "--port", str(PORT), "--host"],
+            env=env
+        )
+        
+        # Wait for server to start
+        time.sleep(5)
+        
+        # Check if process is still running
+        if process.poll() is None:
+            print(f"Development server started successfully on port {PORT}")
+            print(f"You can access the application at: http://localhost:{PORT}")
+            process.wait()  # Wait for process to complete
+        else:
+            print("Error: Development server failed to start")
+            sys.exit(1)
+            
+    except KeyboardInterrupt:
+        print("\nServer stopped by user")
+    except Exception as e:
+        print(f"Error starting development server: {e}")
+        sys.exit(1)
+
+if __name__ == "__main__":
+    print("=== Frontend Development Server ===")
+    cleanup_processes()
+    check_client_directory()
+    start_dev_server()

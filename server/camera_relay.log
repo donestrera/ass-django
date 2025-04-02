@@ -34448,3 +34448,28 @@ subprocess.CalledProcessError: Command '['/Library/Developer/CommandLineTools/us
 2025-04-02 11:32:43,457 - yolo_detector - ERROR - Error converting PT to ONNX: Command '['/Library/Developer/CommandLineTools/usr/bin/python3', '-c', "\nimport torch\nimport torch.nn as nn\nimport sys\n\n# Load model\nmodel = torch.load('/Users/dondon/Code/ass-django/yolov7/yolov7-tiny.pt', map_location='cpu')\nmodel = model['model'] if 'model' in model else model  # Extract model from checkpoint\nmodel = model.float().eval()\n\n# Export to ONNX\ndummy_input = torch.randn(1, 3, 640, 640)\ntorch.onnx.export(\n    model, \n    dummy_input, \n    '/Users/dondon/Code/ass-django/yolov7/yolov7-tiny.onnx', \n    verbose=False,\n    opset_version=12,\n    input_names=['images'],\n    output_names=['output']\n)\nprint(f'Model exported to /Users/dondon/Code/ass-django/yolov7/yolov7-tiny.onnx')\n                "]' returned non-zero exit status 1.
 2025-04-02 11:32:43,457 - yolo_detector - INFO - Falling back to HOG detector
 2025-04-02 11:32:44,523 - yolo_detector - INFO - Converting /Users/dondon/Code/ass-django/yolov7/yolov7-tiny.pt to ONNX format
+2025-04-02 22:49:02,064 - camera_relay - INFO - Attempting to load environment variables from: /Users/dondon/Code/ass-django/server/.env
+2025-04-02 22:49:02,065 - camera_relay - INFO - .env file found: /Users/dondon/Code/ass-django/server/.env
+2025-04-02 22:49:02,065 - camera_relay - INFO - Loaded 7 variables from .env file
+2025-04-02 22:49:02,065 - camera_relay - INFO - BACKGROUND_MODE: True
+2025-04-02 22:49:02,065 - camera_relay - INFO - DIRECT_CAMERA_ACCESS: True
+2025-04-02 22:49:02,065 - camera_relay - INFO - AUTO_CAPTURE: True
+2025-04-02 22:49:02,065 - camera_relay - INFO - CAPTURE_ON_DETECTION: True
+2025-04-02 22:49:02,065 - camera_relay - INFO - SAVE_DETECTION_IMAGES: True
+2025-04-02 22:49:02,125 - camera_relay - INFO - OpenCV imported successfully for background camera capture
+2025-04-02 22:49:03,472 - camera_relay - INFO - Camera test successful. Frame shape: (720, 1280, 3)
+2025-04-02 22:49:03,514 - camera_relay - WARNING - Could not increase process priority
+2025-04-02 22:49:03,514 - camera_relay - INFO - Starting camera relay server on port 8765
+2025-04-02 22:49:03,514 - camera_relay - INFO - Starting background camera capture mode with direct camera access
+2025-04-02 22:49:03,550 - camera_relay - INFO - Health check: 0 clients connected, producer: False, background_mode: True, direct_camera_access: True
+2025-04-02 22:49:03,550 - camera_relay - INFO - Starting background camera capture...
+2025-04-02 22:49:03,697 - camera_relay - INFO - Camera opened successfully in background mode
+2025-04-02 22:49:03,796 - camera_relay - INFO - Added yolov7 directory to path: /Users/dondon/Code/ass-django/yolov7
+2025-04-02 22:49:03,797 - camera_relay - WARNING - Could not import detect.py, using OpenCV detector
+2025-04-02 22:49:03,825 - websockets.server - INFO - server listening on 0.0.0.0:8765
+2025-04-02 22:49:03,825 - camera_relay - INFO - Camera relay server is running at ws://0.0.0.0:8765
+2025-04-02 22:49:10,273 - camera_relay - INFO - Received signal 15, shutting down...
+2025-04-02 22:49:10,290 - camera_relay - INFO - Server is shutting down
+2025-04-02 22:49:10,291 - websockets.server - INFO - server closing
+2025-04-02 22:49:10,324 - websockets.server - INFO - server closed
+2025-04-02 22:49:10,407 - camera_relay - INFO - Camera released in background mode

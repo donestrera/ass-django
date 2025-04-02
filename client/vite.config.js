@@ -6,11 +6,11 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: true, // Listen on all network interfaces
-    port: 5173,
+    port: parseInt(process.env.PORT || '5173'),
     strictPort: true,
     hmr: {
       host: 'localhost',
-      port: 5173,
+      port: parseInt(process.env.PORT || '5173'),
       protocol: 'ws'
     },
     cors: true,
@@ -21,5 +21,10 @@ export default defineConfig({
         secure: false,
       }
     }
+  },
+  preview: {
+    port: parseInt(process.env.PORT || '4173'),
+    host: true,
+    strictPort: true
   }
 })
